@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, Save, Trash2, Edit, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, 
         AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger} from "@/components/ui/alert-dialog"
-import { TextInput } from "@/components/ui/inputs/text-input"
+import { FormTextInput } from "@/components/ui/inputs/form-text-input"
+import { FormDatePicker } from "@/components/ui/inputs/form-date-picker";
+import { FormNumberInput } from "@/components/ui/inputs/form-number-input"
+
 
 const fetchVehicle = async (id) => {
   const vehicles = [
@@ -52,6 +54,8 @@ export default function VehicleDetail({ params }) {
   const { id } = unwrappedParams
 
   const nameRef = useRef(null);
+  const purchaseDateRef = useRef(null);
+  const priceRef = useRef(null);
 
   const [vehicle, setVehicle] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -69,21 +73,17 @@ export default function VehicleDetail({ params }) {
 
   const getVehicle = async () => {
     try {
-      const data = await fetchVehicle(id)
-      setVehicle(data)
-      // Format date for input field (YYYY-MM-DD)
-      const purchaseDate = new Date(data.purchaseDate)
-      const formattedDate = purchaseDate.toISOString().split("T")[0]
-
+      const data = await fetchVehicle(id);
+      setVehicle(data);
       setFormData({
         name: data.name,
-        purchaseDate: formattedDate,
+        purchaseDate: data.purchaseDate,
         purchaseDatePrice: data.purchaseDatePrice,
-      })
+      });
     } catch (error) {
-      console.error("Error fetching vehicle:", error)
+      console.error("Error fetching vehicle:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -181,46 +181,36 @@ export default function VehicleDetail({ params }) {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="name">Nombre del Vehículo</Label>
-          <TextInput
+          <FormTextInput
+            id="name"
             readOnly={!isEditing}
             defaultValue={formData.name}
             ref={nameRef}
+            required
           />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="purchaseDate">Fecha de Compra</Label>
-          {isEditing ? (
-            <Input
-              id="purchaseDate"
-              name="purchaseDate"
-              type="date"
-              value={formData.purchaseDate}
+            <FormDatePicker    
+              id="purchaseDate"   
+              readOnly={!isEditing}
+              defaultValue={formData.purchaseDate}
+              ref={purchaseDateRef}
               required
             />
-          ) : (
-            <Input id="purchaseDate" value={formatDate(vehicle.purchaseDate)} readOnly className="bg-gray-50" />
-          )}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="purchaseDatePrice">Precio de Compra</Label>
-          {isEditing ? (
-            <Input
+          <FormNumberInput
               id="purchaseDatePrice"
               name="purchaseDatePrice"
-              type="number"
-              value={formData.purchaseDatePrice}
+              readOnly={!isEditing}
+              defaultValue={formData.purchaseDatePrice}
+              ref={priceRef}
               required
-            />
-          ) : (
-            <Input
-              id="purchaseDatePrice"
-              value={formatPrice(vehicle.purchaseDatePrice)}
-              readOnly
-              className="bg-gray-50"
-            />
-          )}
+          />
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 pt-4">
@@ -268,17 +258,3 @@ export default function VehicleDetail({ params }) {
     </div>
   )
 }
-
-const formatDate = (dateString) => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString()
-}
-
-const formatPrice = (price) => {
-  return new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(price)
-}
-
