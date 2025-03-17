@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, use } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { fetchVehicleById } from "@/lib/vehicle/api"
 import { ArrowLeft, Save, Trash2, Edit, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -11,25 +12,6 @@ import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, A
 import { FormTextInput } from "@/components/ui/inputs/form-text-input"
 import { FormDatePicker } from "@/components/ui/inputs/form-date-picker";
 import { FormNumberInput } from "@/components/ui/inputs/form-number-input"
-
-
-const fetchVehicle = async (id) => {
-  const vehicles = [
-    {
-      id: 1,
-      name: "Hilux mod 2020",
-      purchaseDate: "2024-01-01T03:00:00.000+00:00",
-      purchaseDatePrice: 60000,
-    },
-    {
-      id: 2,
-      name: "Ford Raptor",
-      purchaseDate: "2025-03-11T03:00:00.000+00:00",
-      purchaseDatePrice: 12345567,
-    },
-  ]
-  return vehicles.find((v) => v.id === Number.parseInt(id))
-}
 
 const updateVehicle = async (id, data) => {
   // In a real app: return await fetch(`/api/vehicles/${id}`, {
@@ -73,7 +55,7 @@ export default function VehicleDetail({ params }) {
 
   const getVehicle = async () => {
     try {
-      const data = await fetchVehicle(id);
+      const data = await fetchVehicleById(id);
       setVehicle(data);
       setFormData({
         name: data.name,

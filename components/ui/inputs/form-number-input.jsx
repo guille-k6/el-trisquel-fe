@@ -2,6 +2,7 @@
 
 import { forwardRef } from "react"
 import { FormTextInput } from "./form-text-input";
+import { formatPrice } from "@/lib/utils";
 
 const FormNumberInput = forwardRef(({readOnly, defaultValue, ...props}, ref) => {
   if(readOnly) {
@@ -18,13 +19,5 @@ const FormNumberInput = forwardRef(({readOnly, defaultValue, ...props}, ref) => 
       />)
   }
 });
-
-const formatPrice = (price) => {
-  return new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(price)
-}
 
 export { FormNumberInput }

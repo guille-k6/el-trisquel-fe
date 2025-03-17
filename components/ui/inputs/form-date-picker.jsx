@@ -2,6 +2,8 @@
 
 import { forwardRef } from "react"
 import { FormTextInput } from "./form-text-input";
+import { formatDateToString } from "@/lib/utils";
+import { formatDateForInput } from "@/lib/utils";
 
 const FormDatePicker = forwardRef(({readOnly, defaultValue, ...props}, ref) => {
   if(readOnly) {
@@ -19,20 +21,5 @@ const FormDatePicker = forwardRef(({readOnly, defaultValue, ...props}, ref) => {
     )
   } 
 });
-
-
-const formatDateToString = (dateString) => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString()
-}
-
-function formatDateForInput(dateString) {
-  try{
-    const date = new Date(dateString);
-    return date.toISOString().split("T")[0]; // Extracts YYYY-MM-DD
-  } catch (e) {
-    return '';
-  }
-}
 
 export { FormDatePicker }

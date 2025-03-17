@@ -1,14 +1,18 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, Save } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { X } from "lucide-react";
+import { FormTextInput } from "@/components/ui/inputs/form-text-input"
+import { FormNumberInput } from "@/components/ui/inputs/form-number-input"
+import { FormDatePicker } from "@/components/ui/inputs/form-date-picker"
+import { formatDateForInput } from "@/lib/utils"
 
-// Mock API function - replace with actual API call
 const createVehicle = async (data) => {
   // In a real app: return await fetch('/api/vehicles', {
   //   method: 'POST',
@@ -26,15 +30,11 @@ export default function NewVehicle() {
     name: "",
     purchaseDate: "",
     purchaseDatePrice: "",
-  })
+  });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === "purchaseDatePrice" ? value : value,
-    }))
-  }
+  const nameRef = useRef(null);
+  const purchaseDateRef = useRef(null);
+  const priceRef = useRef(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -54,6 +54,11 @@ export default function NewVehicle() {
     }
   }
 
+  function handleCancel(e){
+    e.preventDefault();
+    router.push("/vehiculos");
+  }
+
   return (
     <div className="min-h-screen p-4 max-w-2xl mx-auto">
       <Link href="/vehiculos" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
@@ -66,34 +71,38 @@ export default function NewVehicle() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="name">Nombre del Vehículo</Label>
-          <Input id="name" name="name" value={formData.name} onChange={handleChange} required />
+          <FormTextInput
+            id="name"
+            readOnly={false}
+            defaultValue={''}
+            ref={nameRef}
+            required
+          />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="purchaseDate">Fecha de Compra</Label>
-          <Input
-            id="purchaseDate"
-            name="purchaseDate"
-            type="date"
-            value={formData.purchaseDate}
-            onChange={handleChange}
-            required
-          />
+          <FormDatePicker    
+              id="purchaseDate"   
+              readOnly={false}
+              defaultValue={formatDateForInput(Date.now())}
+              ref={purchaseDateRef}
+              required
+            />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="purchaseDatePrice">Precio de Compra</Label>
-          <Input
-            id="purchaseDatePrice"
-            name="purchaseDatePrice"
-            type="number"
-            value={formData.purchaseDatePrice}
-            onChange={handleChange}
-            required
+          <Label htmlFor="purchaseDatePrice">Precio de Compra ($USD)</Label>
+          <FormNumberInput
+              id="purchaseDatePrice"
+              name="purchaseDatePrice"
+              readOnly={false}
+              ref={priceRef}
+              required
           />
         </div>
 
-        <Button type="submit" className="bg-green-600 hover:bg-green-700 mt-4" disabled={saving}>
+        <Button type="submit" className="bg-green-600 hover:bg-green-700 mt-4 mr-2" disabled={saving}>
           {saving ? (
             <>
               <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"></div>
@@ -104,6 +113,9 @@ export default function NewVehicle() {
               <Save className="mr-2 h-4 w-4" /> Guardar Vehículo
             </>
           )}
+        </Button>
+        <Button type="button" variant="outline" onClick={handleCancel} disabled={saving}>
+          <X className="mr-2 h-4 w-4" /> Cancelar
         </Button>
       </form>
     </div>

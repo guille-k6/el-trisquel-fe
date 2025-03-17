@@ -1,45 +1,16 @@
 import Link from "next/link"
+import { fetchVehicles } from "@/lib/vehicle/api"
 import { ArrowLeft, Plus, Calendar, DollarSign } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { formatDateToString } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils"
 
-const fetchVehicles = async () => {
-  // In a real app, this would be: return await fetch('/api/vehicles').then(res => res.json())
-  return [
-    {
-      id: 1,
-      name: "Hilux mod 2020",
-      purchaseDate: "2024-01-01T03:00:00.000+00:00",
-      purchaseDatePrice: 60000,
-    },
-    {
-      id: 2,
-      name: "Ford Raptor",
-      purchaseDate: "2025-03-11T03:00:00.000+00:00",
-      purchaseDatePrice: 12345567,
-    },
-  ]
-}
 
 export default async function Vehiculos() {
 
   const loading = false; // TODO: idk
   const vehicles = await fetchVehicles();
-
-  // Format date to a more readable format
-  const formatDate = (dateString) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString()
-  }
-
-  // Format price with currency
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat("es-AR", {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 0,
-    }).format(price)
-  }
 
   return (
     <div className="min-h-screen p-4 max-w-4xl mx-auto">
@@ -79,7 +50,7 @@ export default async function Vehiculos() {
                   <h2 className="font-semibold text-lg mb-3">{vehicle.name}</h2>
                   <div className="flex items-center text-gray-600 mb-2">
                     <Calendar className="h-4 w-4 mr-2" />
-                    <span className="text-sm">Comprado: {formatDate(vehicle.purchaseDate)}</span>
+                    <span className="text-sm">Comprado: {formatDateToString(vehicle.purchaseDate)}</span>
                   </div>
                   <div className="flex items-center text-gray-600">
                     <DollarSign className="h-4 w-4 mr-2" />
