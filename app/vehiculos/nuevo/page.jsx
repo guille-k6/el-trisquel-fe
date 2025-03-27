@@ -12,25 +12,13 @@ import { FormTextInput } from "@/components/ui/inputs/form-text-input"
 import { FormNumberInput } from "@/components/ui/inputs/form-number-input"
 import { FormDatePicker } from "@/components/ui/inputs/form-date-picker"
 import { formatDateForInput } from "@/lib/utils"
-
-const createVehicle = async (data) => {
-  // In a real app: return await fetch('/api/vehicles', {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify(data)
-  // }).then(res => res.json())
-  console.log("Creating vehicle:", data)
-  return { ...data, id: Math.floor(Math.random() * 1000) }
-}
+import { postNewVehicle } from "@/lib/vehicle/api"
+import { useToast } from "@/components/ui/toast"
 
 export default function NewVehicle() {
   const router = useRouter()
-  const [saving, setSaving] = useState(false)
-  const [formData, setFormData] = useState({
-    name: "",
-    purchaseDate: "",
-    purchaseDatePrice: "",
-  });
+  const { toast } = useToast()
+  const [saving, setSaving] = useState(false);
 
   const nameRef = useRef(null);
   const purchaseDateRef = useRef(null);
@@ -38,17 +26,24 @@ export default function NewVehicle() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setSaving(true)
+    setSaving(true);
 
     try {
-      await createVehicle({
-        ...formData,
-        purchaseDatePrice: Number(formData.purchaseDatePrice),
-      })
-      router.push("/vehiculos")
+      await postNewVehicle({
+        name: nameRef.current.value,
+        purchaseDate: purchaseDateRef.current.value,
+        purchaseDatePrice: Number(priceRef.current.value),
+      });
+      console.log("se creo bien tu vehiculo pibe");
+      
+      //router.push("/vehiculos")
     } catch (error) {
       console.error("Error creating vehicle:", error)
-      alert("Error al crear el vehículo")
+      toast({
+        title: "Error",
+        description: "No se pudo crear",
+        type: "error",
+      })
     } finally {
       setSaving(false)
     }
