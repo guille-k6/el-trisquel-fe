@@ -38,11 +38,11 @@ export default function NewVehicle() {
       
       //router.push("/vehiculos")
     } catch (error) {
-      console.error("Error creating vehicle:", error)
       toast({
         title: "Error",
-        description: "No se pudo crear",
+        description: error.data,
         type: "error",
+        duration: 8000,
       })
     } finally {
       setSaving(false)

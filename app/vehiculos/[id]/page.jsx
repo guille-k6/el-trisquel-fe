@@ -7,48 +7,34 @@ import { fetchVehicleById } from "@/lib/vehicle/api"
 import { ArrowLeft, Save, Trash2, Edit, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, 
-        AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger} from "@/components/ui/alert-dialog"
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
+  AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
+} from "@/components/ui/alert-dialog"
 import { FormTextInput } from "@/components/ui/inputs/form-text-input"
 import { FormDatePicker } from "@/components/ui/inputs/form-date-picker";
 import { FormNumberInput } from "@/components/ui/inputs/form-number-input"
-
-const updateVehicle = async (id, data) => {
-  // In a real app: return await fetch(`/api/vehicles/${id}`, {
-  //   method: 'PUT',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify(data)
-  // }).then(res => res.json())
-  //console.log("Updating vehicle:", id, data)
-  // return { ...data, id }
-}
-
-const deleteVehicle = async (id) => {
-  // In a real app: return await fetch(`/api/vehicles/${id}`, { method: 'DELETE' })
-  console.log("Deleting vehicle:", id)
-  // return true
-}
+import { deleteVehicle } from "@/lib/vehicle/api";
+import { useToast } from "@/components/ui/toast"
+import { postNewVehicle } from "@/lib/vehicle/api"
 
 export default function VehicleDetail({ params }) {
+  const { toast } = useToast()
   const router = useRouter()
-  // Unwrap params using React.use()
   const unwrappedParams = use(params)
   const { id } = unwrappedParams
-
+  // refs
   const nameRef = useRef(null);
   const purchaseDateRef = useRef(null);
   const priceRef = useRef(null);
-
-  const [vehicle, setVehicle] = useState(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
-  const [formData, setFormData] = useState({
-    name: "",
-    purchaseDate: "",
-    purchaseDatePrice: 0,
-  })
-
+  const [formData, setFormData] = useState({})
+  
+  //****************************************************************************************************
+  // TODO: Terminar de acomodar el estado vehicles y ser consistente en la forma de mostrar la fecha y actualizacion del vehiculo...
+  //**************************************************************************************************** 
   useEffect(() => {
     getVehicle()
   }, [])
@@ -56,40 +42,58 @@ export default function VehicleDetail({ params }) {
   const getVehicle = async () => {
     try {
       const data = await fetchVehicleById(id);
-      setVehicle(data);
       setFormData({
         name: data.name,
         purchaseDate: data.purchaseDate,
         purchaseDatePrice: data.purchaseDatePrice,
       });
     } catch (error) {
-      console.error("Error fetching vehicle:", error);
+      toast({
+        title: "Error",
+        description: error.data,
+        type: "error",
+        duration: 8000,
+      })
     } finally {
       setLoading(false);
     }
   }
 
+  /**
+   * Actually handles the update of a vehicle.
+   * @param {*} e 
+   */
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSaving(true)
-
+    console.log("voy a entrar al post");
+    
     try {
-      await updateVehicle(id, {
-        ...formData,
-        id: Number.parseInt(id),
+      await postNewVehicle({
+              id: id,
+              name: nameRef.current.value,
+              purchaseDate: purchaseDateRef.current.value,
+              purchaseDatePrice: Number(priceRef.current.value),
+            });
+      // Update the vehicle state to reflect changes
+      setFormData({
+        name: nameRef.current.value,
+        purchaseDate: purchaseDateRef.current.value,
+        purchaseDatePrice: priceRef.current.value,
       })
       setIsEditing(false)
-      // Update the vehicle state to reflect changes
-      setVehicle({
-        ...vehicle,
-        name: formData.name,
-        purchaseDate: new Date(formData.purchaseDate).toISOString(),
-        purchaseDatePrice: formData.purchaseDatePrice,
-      })
       console.log("submited")
     } catch (error) {
-      console.error("Error updating vehicle:", error)
-      alert("Error al guardar los cambios")
+      console.log(error);
+      
+      console.log("pase por el error");
+      
+      toast({
+        title: "Error",
+        description: error.data,
+        type: "error",
+        duration: 8000,
+      })
     } finally {
       setSaving(false)
     }
@@ -100,12 +104,26 @@ export default function VehicleDetail({ params }) {
     try {
       await deleteVehicle(id)
       router.push("/vehiculos")
+      toast({
+        title: "Eliminado",
+        description: "El vehiculo se eliminó exitosamente",
+        type: "success",
+        duration: 8000,
+      })
     } catch (error) {
-      console.error("Error deleting vehicle:", error)
-      alert("Error al eliminar el vehículo")
+      toast({
+        title: "Error",
+        description: error.data,
+        type: "error",
+        duration: 8000,
+      })
     }
   }
 
+  /**
+   * Set the form state to 'editing'
+   * @param {*} e 
+   */
   const handleEdit = (e) => {
     e.preventDefault()
     setIsEditing(true)
@@ -174,24 +192,24 @@ export default function VehicleDetail({ params }) {
 
         <div className="space-y-2">
           <Label htmlFor="purchaseDate">Fecha de Compra</Label>
-            <FormDatePicker    
-              id="purchaseDate"   
-              readOnly={!isEditing}
-              defaultValue={formData.purchaseDate}
-              ref={purchaseDateRef}
-              required
-            />
+          <FormDatePicker
+            id="purchaseDate"
+            readOnly={!isEditing}
+            defaultValue={formData.purchaseDate}
+            ref={purchaseDateRef}
+            required
+          />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="purchaseDatePrice">Precio de Compra</Label>
           <FormNumberInput
-              id="purchaseDatePrice"
-              name="purchaseDatePrice"
-              readOnly={!isEditing}
-              defaultValue={formData.purchaseDatePrice}
-              ref={priceRef}
-              required
+            id="purchaseDatePrice"
+            name="purchaseDatePrice"
+            readOnly={!isEditing}
+            defaultValue={formData.purchaseDatePrice}
+            ref={priceRef}
+            required
           />
         </div>
 
@@ -199,7 +217,7 @@ export default function VehicleDetail({ params }) {
           {isEditing ? (
             <>
               <Button type="submit" disabled={saving}>
-                    <Save className="mr-2 h-4 w-4" /> Guardar Cambios
+                <Save className="mr-2 h-4 w-4" /> Guardar Cambios
               </Button>
 
               <Button type="button" variant="outline" onClick={handleCancel} disabled={saving}>
