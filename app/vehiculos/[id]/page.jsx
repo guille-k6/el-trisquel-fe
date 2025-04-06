@@ -17,6 +17,7 @@ import { FormNumberInput } from "@/components/ui/inputs/form-number-input"
 import { deleteVehicle } from "@/lib/vehicle/api";
 import { useToast } from "@/components/ui/toast"
 import { postNewVehicle } from "@/lib/vehicle/api"
+import { formatDateToString } from "@/lib/utils"
 
 export default function VehicleDetail({ params }) {
   const { toast } = useToast()
@@ -32,9 +33,6 @@ export default function VehicleDetail({ params }) {
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({})
   
-  //****************************************************************************************************
-  // TODO: Terminar de acomodar el estado vehicles y ser consistente en la forma de mostrar la fecha y actualizacion del vehiculo...
-  //**************************************************************************************************** 
   useEffect(() => {
     getVehicle()
   }, [])
@@ -67,6 +65,9 @@ export default function VehicleDetail({ params }) {
     e.preventDefault()
     setSaving(true)
     console.log("voy a entrar al post");
+    console.log(formData);
+    console.log(purchaseDateRef.current.value);
+    
     
     try {
       await postNewVehicle({
@@ -82,12 +83,13 @@ export default function VehicleDetail({ params }) {
         purchaseDatePrice: priceRef.current.value,
       })
       setIsEditing(false)
-      console.log("submited")
+      toast({
+        title: "Actualizado",
+        description: "El vehiculo se actualizó exitosamente",
+        type: "success",
+        duration: 7000,
+      })
     } catch (error) {
-      console.log(error);
-      
-      console.log("pase por el error");
-      
       toast({
         title: "Error",
         description: error.data,
@@ -108,14 +110,14 @@ export default function VehicleDetail({ params }) {
         title: "Eliminado",
         description: "El vehiculo se eliminó exitosamente",
         type: "success",
-        duration: 8000,
+        duration: 7000,
       })
     } catch (error) {
       toast({
         title: "Error",
         description: error.data,
         type: "error",
-        duration: 8000,
+        duration: 7000,
       })
     }
   }
@@ -131,17 +133,6 @@ export default function VehicleDetail({ params }) {
 
   const handleCancel = (e) => {
     e.preventDefault();
-    // Reset form data to original values
-    if (vehicle) {
-      const purchaseDate = new Date(vehicle.purchaseDate)
-      const formattedDate = purchaseDate.toISOString().split("T")[0]
-
-      setFormData({
-        name: vehicle.name,
-        purchaseDate: formattedDate,
-        purchaseDatePrice: vehicle.purchaseDatePrice,
-      })
-    }
     setIsEditing(false)
   }
 
@@ -153,7 +144,7 @@ export default function VehicleDetail({ params }) {
     )
   }
 
-  if (!vehicle) {
+  if (!formData.name) {
     return (
       <div className="min-h-screen p-4">
         <Link href="/vehiculos" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
@@ -175,8 +166,6 @@ export default function VehicleDetail({ params }) {
       </Link>
 
       <h1 className="text-2xl font-bold mb-6">{isEditing ? "Editar Vehículo" : "Detalles del Vehículo"}</h1>
-
-      <p>{"Editing: " + isEditing + " formData: " + formData.name + " " + formData.purchaseDate + " " + formData.purchaseDatePrice + " " + "loading: " + loading}</p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">

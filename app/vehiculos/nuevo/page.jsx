@@ -11,9 +11,9 @@ import { X } from "lucide-react";
 import { FormTextInput } from "@/components/ui/inputs/form-text-input"
 import { FormNumberInput } from "@/components/ui/inputs/form-number-input"
 import { FormDatePicker } from "@/components/ui/inputs/form-date-picker"
-import { formatDateForInput } from "@/lib/utils"
 import { postNewVehicle } from "@/lib/vehicle/api"
 import { useToast } from "@/components/ui/toast"
+import { getTodayDateForInput } from "@/lib/utils"
 
 export default function NewVehicle() {
   const router = useRouter()
@@ -33,10 +33,14 @@ export default function NewVehicle() {
         name: nameRef.current.value,
         purchaseDate: purchaseDateRef.current.value,
         purchaseDatePrice: Number(priceRef.current.value),
-      });
-      console.log("se creo bien tu vehiculo pibe");
-      
-      //router.push("/vehiculos")
+      });  
+      toast({
+        title: "Creado",
+        description: "El vehiculo se creó exitosamente",
+        type: "success",
+        duration: 7000,
+      })
+      router.push("/vehiculos");
     } catch (error) {
       toast({
         title: "Error",
@@ -80,7 +84,7 @@ export default function NewVehicle() {
           <FormDatePicker    
               id="purchaseDate"   
               readOnly={false}
-              defaultValue={formatDateForInput(Date.now())}
+              defaultValue={getTodayDateForInput()}
               ref={purchaseDateRef}
               required
             />
