@@ -7,10 +7,9 @@ import { formatDateToString } from "@/lib/utils";
 import { formatPrice } from "@/lib/utils"
 
 
-export default async function Vehiculos() {
-
-  const loading = false; // TODO: idk
+export default async function Vehiculos() { 
   const vehicles = await fetchVehicles();
+  const loading = false; // TODO: idk
 
   return (
     <div className="min-h-screen p-4 max-w-4xl mx-auto">

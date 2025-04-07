@@ -33,6 +33,17 @@ export default function Home() {
         </Link>
 
         <Link
+          href="/clientes"
+          className="flex flex-col items-center rounded-lg border bg-white p-6 shadow-sm transition-all hover:shadow-md"
+        >
+          <div className="mb-4 rounded-full bg-green-100 p-3">
+            <Package className="h-8 w-8 text-green-600" />
+          </div>
+          <h2 className="mb-2 text-xl font-semibold">ABM Cliente</h2>
+          <p className="text-center text-sm text-gray-600">Administre su inventario de clientes</p>
+        </Link>
+
+        <Link
           href="/libros-diarios"
           className="flex flex-col items-center rounded-lg border bg-white p-6 shadow-sm transition-all hover:shadow-md"
         >
