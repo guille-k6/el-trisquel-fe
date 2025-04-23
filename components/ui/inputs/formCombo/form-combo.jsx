@@ -19,13 +19,27 @@ const FormCombo = forwardRef(
     ref,
   ) => {
     const [open, setOpen] = useState(false)
-    const [value, setValue] = useState(defaultValue || "")
+    const [value, setValue] = useState(() => {
+      if (!defaultValue) return "";
+      
+      if (typeof defaultValue === 'string' || typeof defaultValue === 'number') {
+        return defaultValue;
+      }
+      
+      if (typeof defaultValue === 'object' && defaultValue !== null) {
+        return defaultValue[valueKey] || "";
+      }
+      
+      return "";
+    });
+    
     const [search, setSearch] = useState("")
     const [filteredOptions, setFilteredOptions] = useState(options.slice(0, 10))
+    const [initialLoad, setInitialLoad] = useState(true);
     const containerRef = useRef(null)
     const inputRef = useRef(null)
+    
     const combinedRef = (node) => {
-      // Forward the ref to both our internal ref and the external ref
       inputRef.current = node
       if (typeof ref === "function") {
         ref(node)
@@ -34,13 +48,45 @@ const FormCombo = forwardRef(
       }
     }
 
+    // Handle options load
+    useEffect(() => {
+      if (options.length > 0 && defaultValue && initialLoad) {
+        // Find the matching option if defaultValue is an object with displayKey
+        if (typeof defaultValue === 'object' && defaultValue !== null && defaultValue[displayKey]) {
+          const foundOption = options.find(opt => 
+            opt[displayKey] === defaultValue[displayKey] || 
+            opt[valueKey] === defaultValue[valueKey]
+          );
+          
+          if (foundOption) {
+            setValue(foundOption[valueKey]);
+          }
+        }
+        // If defaultValue is just the display text (name), try to find that option
+        else if (typeof defaultValue === 'string') {
+          const foundOption = options.find(opt => 
+            opt[displayKey] === defaultValue || 
+            String(opt[valueKey]) === defaultValue
+          );
+          
+          if (foundOption) {
+            setValue(foundOption[valueKey]);
+          }
+        }
+        
+        setInitialLoad(false);
+      }
+    }, [options, defaultValue, initialLoad, displayKey, valueKey]);
+
     // Filter options based on search text
     useEffect(() => {
       if (!search) {
         setFilteredOptions(options.slice(0, 10))
       } else {
         const filtered = options
-          .filter((option) => option[displayKey].toLowerCase().includes(search.toLowerCase()))
+          .filter((option) => 
+            option[displayKey]?.toString().toLowerCase().includes(search.toLowerCase())
+          )
           .slice(0, 10)
         setFilteredOptions(filtered)
       }
@@ -62,10 +108,12 @@ const FormCombo = forwardRef(
 
     // Handle opening the dropdown
     const handleOpen = () => {
-      if (!open) {
-        setSearch("") // Reset search when opening
+      if (!readOnly) {
+        if (!open) {
+          setSearch("") // Reset search when opening
+        }
+        setOpen(!open)
       }
-      setOpen(!open)
     }
 
     // Handle selection
@@ -81,7 +129,11 @@ const FormCombo = forwardRef(
     // Find display text for selected value
     const getDisplayText = () => {
       if (!value) return ""
-      const selectedOption = options.find((option) => option[valueKey] === value)
+      
+      const selectedOption = options.find((option) => 
+        option[valueKey]?.toString() === value?.toString()
+      );
+      
       return selectedOption ? selectedOption[displayKey] : ""
     }
 
@@ -91,7 +143,7 @@ const FormCombo = forwardRef(
           <input
             type="text"
             ref={combinedRef}
-            className={`flex h-10 w-full rounded-md border border-gray-300 px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-66 pr-10`}
+            className={`flex h-10 w-full rounded-md border border-gray-300 px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-66 pr-10 ${readOnly ? 'bg-gray-50' : ''}`}
             placeholder={placeholder}
             disabled={readOnly}
             value={open ? search : getDisplayText()}
@@ -102,17 +154,19 @@ const FormCombo = forwardRef(
             onClick={handleOpen}
             {...props}
           />
-          <button
-            type="button"
-            onClick={handleOpen}
-            className="absolute right-0 top-0 h-full px-2 flex items-center justify-center"
-            tabIndex={-1}
-          >
-            <ChevronsUpDown className="h-4 w-4 text-gray-500" />
-          </button>
+          {!readOnly && (
+            <button
+              type="button"
+              onClick={handleOpen}
+              className="absolute right-0 top-0 h-full px-2 flex items-center justify-center"
+              tabIndex={-1}
+            >
+              <ChevronsUpDown className="h-4 w-4 text-gray-500" />
+            </button>
+          )}
         </div>
 
-        {open && (
+        {open && !readOnly && (
           <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 shadow-lg">
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option, index) => (
@@ -120,12 +174,14 @@ const FormCombo = forwardRef(
                   key={option[valueKey] || index}
                   className={cn(
                     "relative flex cursor-pointer select-none items-center py-1.5 px-3 text-sm hover:bg-gray-100",
-                    value === option[valueKey] && "bg-blue-50",
+                    value?.toString() === option[valueKey]?.toString() && "bg-blue-50",
                   )}
                   onClick={() => handleSelect(option)}
                 >
                   <span className="flex-1 truncate">{option[displayKey]}</span>
-                  {value === option[valueKey] && <Check className="h-4 w-4 text-blue-500 ml-2" />}
+                  {value?.toString() === option[valueKey]?.toString() && (
+                    <Check className="h-4 w-4 text-blue-500 ml-2" />
+                  )}
                 </div>
               ))
             ) : (

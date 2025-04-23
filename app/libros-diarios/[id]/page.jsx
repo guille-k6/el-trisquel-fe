@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useEffect, useRef, use } from "react"
+import { useState, useEffect, use } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import {fetchDailyBookById, deleteDailyBook, postNewDailyBook} from "@/lib/daily-book/api"
+import { fetchDailyBookById, deleteDailyBook, postNewDailyBook } from "@/lib/daily-book/api"
 import { fetchVehicles } from "@/lib/vehicle/api";
 import { fetchProducts } from "@/lib/product/api";
 import { fetchClients } from "@/lib/customer/api";
@@ -30,35 +30,39 @@ import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
 export default function LibroDiarioDetail({ params }) {
   const { toast } = useToast()
   const router = useRouter()
-  const unwrappedParams = use(params)
-  const { id } = unwrappedParams
+  const { id } = use(params)
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
-  const [formData, setFormData] = useState({})
+  
+  // State for form data - combining all form fields
+  const [formData, setFormData] = useState({
+    id: "",
+    date: "",
+    vehicle: null,
+    vehicleKmsBefore: 0,
+    vehicleKmsAfter: 0,
+    kgTankBefore: 0,
+    kgTankAfter: 0,
+    ltExtractedTank: 0,
+    ltRemainingFlask: 0,
+    ltTotalFlask: 0,
+    items: []
+  })
+  
+  // Reference data
   const [vehicles, setVehicles] = useState([])
   const [products, setProducts] = useState([])
   const [clients, setClients] = useState([])
-  const [items, setItems] = useState([])
-
-  // Refs para el formulario principal
-  const dateRef = useRef(null)
-  const vehicleRef = useRef(null)
-  const vehicleKmsBeforeRef = useRef(null)
-  const vehicleKmsAfterRef = useRef(null)
-  const kgTankBeforeRef = useRef(null)
-  const kgTankAfterRef = useRef(null)
-  const ltExtractedTankRef = useRef(null)
-  const ltRemainingFlaskRef = useRef(null)
-  const ltTotalFlaskRef = useRef(null)
 
   useEffect(() => {
     fetchData();
-  });
+  }, [id]); // Only re-fetch when ID changes
 
   const fetchData = async () => {
     try {
+      setLoading(true);
       const [libroDiarioData, vehiclesData, productsData, clientsData] = await Promise.all([
         fetchDailyBookById(id),
         fetchVehicles(),
@@ -66,8 +70,20 @@ export default function LibroDiarioDetail({ params }) {
         fetchClients(),
       ])
 
-      setFormData(libroDiarioData)
-      setItems(libroDiarioData.items || [])
+      setFormData({
+        id: libroDiarioData.id,
+        date: libroDiarioData.date,
+        vehicle: libroDiarioData.vehicle,
+        vehicleKmsBefore: libroDiarioData.vehicleKmsBefore,
+        vehicleKmsAfter: libroDiarioData.vehicleKmsAfter,
+        kgTankBefore: libroDiarioData.kgTankBefore,
+        kgTankAfter: libroDiarioData.kgTankAfter,
+        ltExtractedTank: libroDiarioData.ltExtractedTank,
+        ltRemainingFlask: libroDiarioData.ltRemainingFlask,
+        ltTotalFlask: libroDiarioData.ltTotalFlask,
+        items: libroDiarioData.items || []
+      })
+      
       setVehicles(vehiclesData)
       setProducts(productsData)
       setClients(clientsData)
@@ -83,23 +99,91 @@ export default function LibroDiarioDetail({ params }) {
     }
   }
 
+  // Handle changes to main form fields
+  const handleChange = (field, value) => {
+    setFormData({
+      ...formData,
+      [field]: value
+    });
+  }
+
+  // Handle selection for combo boxes
+  const handleSelectChange = (field, option) => {
+    setFormData({
+      ...formData,
+      [field]: option
+    });
+  }
+
+  // Handle item changes
+  const handleItemChange = (index, field, value) => {
+    const updatedItems = [...formData.items];
+
+    if (field === "product") {
+      updatedItems[index].product = {
+        id: value,
+        name: products.find((p) => p.id.toString() === value.toString())?.name || "",
+      }
+    } else if (field === "client") {
+      updatedItems[index].client = {
+        id: value,
+        name: clients.find((c) => c.id.toString() === value.toString())?.name || "",
+      }
+    } else if (field === "authorized") {
+      updatedItems[index].authorized = value
+    } else {
+      updatedItems[index][field] = value
+    }
+
+    setFormData({
+      ...formData,
+      items: updatedItems
+    });
+  }
+
+  const addItem = () => {
+    const newItem = {
+      id: null, // Será asignado por el backend
+      amount: 0,
+      product: { id: products[0]?.id || "", name: products[0]?.name || "" },
+      client: { id: clients[0]?.id || "", name: clients[0]?.name || "" },
+      authorized: false,
+    }
+    
+    setFormData({
+      ...formData,
+      items: [...formData.items, newItem]
+    });
+  }
+
+  const removeItem = (index) => {
+    const updatedItems = [...formData.items];
+    updatedItems.splice(index, 1);
+    
+    setFormData({
+      ...formData,
+      items: updatedItems
+    });
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSaving(true)
 
     try {
+      // Prepare data for API
       const updatedLibroDiario = {
-        id: id,
-        vehicle: { id: vehicleRef.current.value },
-        date: dateRef.current.value,
-        vehicleKmsBefore: Number(vehicleKmsBeforeRef.current.value),
-        vehicleKmsAfter: Number(vehicleKmsAfterRef.current.value),
-        kgTankBefore: Number(kgTankBeforeRef.current.value),
-        kgTankAfter: Number(kgTankAfterRef.current.value),
-        ltExtractedTank: Number(ltExtractedTankRef.current.value),
-        ltRemainingFlask: Number(ltRemainingFlaskRef.current.value),
-        ltTotalFlask: Number(ltTotalFlaskRef.current.value),
-        items: items.map((item) => ({
+        id: formData.id,
+        vehicle: { id: formData.vehicle.id },
+        date: formData.date,
+        vehicleKmsBefore: Number(formData.vehicleKmsBefore),
+        vehicleKmsAfter: Number(formData.vehicleKmsAfter),
+        kgTankBefore: Number(formData.kgTankBefore),
+        kgTankAfter: Number(formData.kgTankAfter),
+        ltExtractedTank: Number(formData.ltExtractedTank),
+        ltRemainingFlask: Number(formData.ltRemainingFlask),
+        ltTotalFlask: Number(formData.ltTotalFlask),
+        items: formData.items.map((item) => ({
           id: item.id,
           amount: Number(item.amount),
           product: { id: item.product.id },
@@ -109,14 +193,6 @@ export default function LibroDiarioDetail({ params }) {
       }
 
       await postNewDailyBook(updatedLibroDiario)
-
-      // Actualizar el estado local
-      const selectedVehicle = vehicles.find((v) => v.id.toString() === vehicleRef.current.value.toString())
-
-      setFormData({
-        ...updatedLibroDiario,
-        vehicle: selectedVehicle,
-      })
 
       setIsEditing(false)
       toast({
@@ -168,46 +244,6 @@ export default function LibroDiarioDetail({ params }) {
     setIsEditing(false);
   }
 
-  // Funciones para manejar los items
-  const handleItemChange = (index, field, value) => {
-    const updatedItems = [...items]
-
-    if (field === "product") {
-      updatedItems[index].product = {
-        id: value,
-        name: products.find((p) => p.id.toString() === value.toString())?.name || "",
-      }
-    } else if (field === "client") {
-      updatedItems[index].client = {
-        id: value,
-        name: clients.find((c) => c.id.toString() === value.toString())?.name || "",
-      }
-    } else if (field === "authorized") {
-      updatedItems[index].authorized = value
-    } else {
-      updatedItems[index][field] = value
-    }
-
-    setItems(updatedItems)
-  }
-
-  const addItem = () => {
-    const newItem = {
-      id: null, // Será asignado por el backend
-      amount: 0,
-      product: { id: products[0]?.id || "", name: products[0]?.name || "" },
-      client: { id: clients[0]?.id || "", name: clients[0]?.name || "" },
-      authorized: false,
-    }
-    setItems([...items, newItem])
-  }
-
-  const removeItem = (index) => {
-    const updatedItems = [...items]
-    updatedItems.splice(index, 1)
-    setItems(updatedItems)
-  }
-
   if (loading) {
     return (
       <div className="min-h-screen p-4 flex justify-center items-center">
@@ -243,7 +279,13 @@ export default function LibroDiarioDetail({ params }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <Label htmlFor="date">Fecha</Label>
-            <FormDatePicker id="date" readOnly={!isEditing} defaultValue={formData.date} ref={dateRef} required />
+            <FormDatePicker 
+              id="date" 
+              readOnly={!isEditing} 
+              value={formData.date}
+              onChange={(value) => handleChange('date', value)}
+              required 
+            />
           </div>
 
           <div className="space-y-2">
@@ -252,11 +294,11 @@ export default function LibroDiarioDetail({ params }) {
               id="vehicleCombo" 
               options={vehicles} 
               placeholder="Vehículo..." 
-              /*onChange={handleVehicleSelect} */
+              onChange={(option) => handleSelectChange('vehicle', option)}
               readOnly={!isEditing}
               defaultValue={formData.vehicle}
-              ref={vehicleRef}
-              required/>
+              required
+            />
           </div>
         </div>
 
@@ -266,8 +308,8 @@ export default function LibroDiarioDetail({ params }) {
             <FormNumberInput
               id="vehicleKmsBefore"
               readOnly={!isEditing}
-              defaultValue={formData.vehicleKmsBefore}
-              ref={vehicleKmsBeforeRef}
+              value={formData.vehicleKmsBefore}
+              onChange={(e) => handleChange('vehicleKmsBefore', e.target.value)}
               required
             />
           </div>
@@ -277,8 +319,8 @@ export default function LibroDiarioDetail({ params }) {
             <FormNumberInput
               id="vehicleKmsAfter"
               readOnly={!isEditing}
-              defaultValue={formData.vehicleKmsAfter}
-              ref={vehicleKmsAfterRef}
+              value={formData.vehicleKmsAfter}
+              onChange={(e) => handleChange('vehicleKmsAfter', e.target.value)}
               required
             />
           </div>
@@ -290,8 +332,8 @@ export default function LibroDiarioDetail({ params }) {
             <FormNumberInput
               id="kgTankBefore"
               readOnly={!isEditing}
-              defaultValue={formData.kgTankBefore}
-              ref={kgTankBeforeRef}
+              value={formData.kgTankBefore}
+              onChange={(e) => handleChange('kgTankBefore', e.target.value)}
               required
             />
           </div>
@@ -301,8 +343,8 @@ export default function LibroDiarioDetail({ params }) {
             <FormNumberInput
               id="kgTankAfter"
               readOnly={!isEditing}
-              defaultValue={formData.kgTankAfter}
-              ref={kgTankAfterRef}
+              value={formData.kgTankAfter}
+              onChange={(e) => handleChange('kgTankAfter', e.target.value)}
               required
             />
           </div>
@@ -312,8 +354,8 @@ export default function LibroDiarioDetail({ params }) {
             <FormNumberInput
               id="ltExtractedTank"
               readOnly={!isEditing}
-              defaultValue={formData.ltExtractedTank}
-              ref={ltExtractedTankRef}
+              value={formData.ltExtractedTank}
+              onChange={(e) => handleChange('ltExtractedTank', e.target.value)}
               required
             />
           </div>
@@ -325,8 +367,8 @@ export default function LibroDiarioDetail({ params }) {
             <FormNumberInput
               id="ltRemainingFlask"
               readOnly={!isEditing}
-              defaultValue={formData.ltRemainingFlask}
-              ref={ltRemainingFlaskRef}
+              value={formData.ltRemainingFlask}
+              onChange={(e) => handleChange('ltRemainingFlask', e.target.value)}
               required
             />
           </div>
@@ -336,8 +378,8 @@ export default function LibroDiarioDetail({ params }) {
             <FormNumberInput
               id="ltTotalFlask"
               readOnly={!isEditing}
-              defaultValue={formData.ltTotalFlask}
-              ref={ltTotalFlaskRef}
+              value={formData.ltTotalFlask}
+              onChange={(e) => handleChange('ltTotalFlask', e.target.value)}
               required
             />
           </div>
@@ -353,13 +395,13 @@ export default function LibroDiarioDetail({ params }) {
             )}
           </div>
 
-          {items.length === 0 ? (
+          {formData.items.length === 0 ? (
             <div className="text-center py-6 bg-gray-50 rounded-lg">
               <p className="text-gray-500">No hay items registrados</p>
             </div>
           ) : (
             <div className="space-y-4">
-              {items.map((item, index) => (
+              {formData.items.map((item, index) => (
                 <Card key={index} className="overflow-hidden">
                   <CardContent className="p-4">
                     <div className="flex justify-between items-start mb-4">
