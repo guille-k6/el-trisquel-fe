@@ -25,6 +25,7 @@ import { FormNumberInput } from "@/components/ui/inputs/form-number-input"
 import { FormDatePicker } from "@/components/ui/inputs/form-date-picker"
 import { useToast } from "@/components/ui/toast"
 import { Card, CardContent } from "@/components/ui/card"
+import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
 
 export default function LibroDiarioDetail({ params }) {
   const { toast } = useToast()
@@ -60,9 +61,9 @@ export default function LibroDiarioDetail({ params }) {
     try {
       const [libroDiarioData, vehiclesData, productsData, clientsData] = await Promise.all([
         fetchDailyBookById(id),
-        // fetchVehicles(),
-        // fetchProducts(),
-        // fetchClients(),
+        fetchVehicles(),
+        fetchProducts(),
+        fetchClients(),
       ])
 
       setFormData(libroDiarioData)
@@ -246,22 +247,16 @@ export default function LibroDiarioDetail({ params }) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="vehicle">Vehículo</Label>
-            <select
-              id="vehicle"
-              name="vehicle"
-              className={`w-full rounded-md border border-input px-3 py-2 ${!isEditing ? "bg-gray-100" : "bg-background"}`}
-              disabled={!isEditing}
+            <Label htmlFor="vehicleCombo" className="block text-sm font-medium mb-1">Vehículo</Label>
+            <FormCombo
+              id="vehicleCombo" 
+              options={vehicles} 
+              placeholder="Vehículo..." 
+              /*onChange={handleVehicleSelect} */
+              readOnly={!isEditing}
+              defaultValue={formData.vehicle}
               ref={vehicleRef}
-              defaultValue={formData.vehicle?.id}
-              required
-            >
-              {vehicles.map((vehicle) => (
-                <option key={vehicle.id} value={vehicle.id}>
-                  {vehicle.name}
-                </option>
-              ))}
-            </select>
+              required/>
           </div>
         </div>
 

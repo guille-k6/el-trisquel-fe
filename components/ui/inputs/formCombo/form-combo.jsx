@@ -4,11 +4,24 @@ import { forwardRef, useState, useEffect, useRef } from "react"
 import { Check, ChevronsUpDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-const FormCombo = forwardRef(({options = [], placeholder = "Select an option...", readOnly, defaultValue, onChange, displayKey = "name",valueKey = "id", ...props}, ref, ) => {
+const FormCombo = forwardRef(
+  (
+    {
+      options = [],
+      placeholder = "Select an option...",
+      readOnly,
+      defaultValue,
+      onChange,
+      displayKey = "name",
+      valueKey = "id",
+      ...props
+    },
+    ref,
+  ) => {
     const [open, setOpen] = useState(false)
     const [value, setValue] = useState(defaultValue || "")
     const [search, setSearch] = useState("")
-    const [filteredOptions, setFilteredOptions] = useState(options)
+    const [filteredOptions, setFilteredOptions] = useState(options.slice(0, 10))
     const containerRef = useRef(null)
     const inputRef = useRef(null)
     const combinedRef = (node) => {
@@ -47,10 +60,18 @@ const FormCombo = forwardRef(({options = [], placeholder = "Select an option..."
       }
     }, [])
 
+    // Handle opening the dropdown
+    const handleOpen = () => {
+      if (!open) {
+        setSearch("") // Reset search when opening
+      }
+      setOpen(!open)
+    }
+
     // Handle selection
     const handleSelect = (option) => {
       setValue(option[valueKey])
-      setSearch(option[displayKey])
+      setSearch("") // Reset search after selection
       setOpen(false)
       if (onChange) {
         onChange(option)
@@ -78,12 +99,12 @@ const FormCombo = forwardRef(({options = [], placeholder = "Select an option..."
               setSearch(e.target.value)
               if (!open) setOpen(true)
             }}
-            onClick={() => setOpen(!open)}
+            onClick={handleOpen}
             {...props}
           />
           <button
             type="button"
-            onClick={() => setOpen(!open)}
+            onClick={handleOpen}
             className="absolute right-0 top-0 h-full px-2 flex items-center justify-center"
             tabIndex={-1}
           >
