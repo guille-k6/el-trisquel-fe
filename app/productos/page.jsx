@@ -7,7 +7,6 @@ import { Card, CardContent } from "@/components/ui/card"
 
 export default async function Productos() {
   const products = await fetchProducts()
-  const loading = false // TODO: idk
 
   return (
     <div className="min-h-screen p-4 max-w-4xl mx-auto">
@@ -26,11 +25,7 @@ export default async function Productos() {
 
       <h1 className="text-2xl font-bold mb-6">Gestión de productos</h1>
 
-      {loading ? (
-        <div className="flex justify-center py-10">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
-        </div>
-      ) : products.length === 0 ? (
+      {products.length === 0 ? (
         <div className="text-center py-10 bg-gray-50 rounded-lg">
           <p className="text-gray-500">No hay productos registrados</p>
           <Link href="/productos/nuevo">

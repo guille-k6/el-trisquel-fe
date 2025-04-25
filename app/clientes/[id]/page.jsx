@@ -28,10 +28,6 @@ export default function ClientDetail({ params }) {
   const router = useRouter()
   const unwrappedParams = use(params)
   const { id } = unwrappedParams
-  // refs
-  const nameRef = useRef(null)
-  const addressRef = useRef(null)
-  const phoneNumberRef = useRef(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
@@ -72,15 +68,9 @@ export default function ClientDetail({ params }) {
     try {
       await postNewClient({
         id: id,
-        name: nameRef.current.value,
-        address: addressRef.current.value,
-        phoneNumber: phoneNumberRef.current.value,
-      })
-      // Update the client state to reflect changes
-      setFormData({
-        name: nameRef.current.value,
-        address: addressRef.current.value,
-        phoneNumber: phoneNumberRef.current.value,
+        name: formData.name,
+        address: formData.address,
+        phoneNumber: formData.phoneNumber,
       })
       setIsEditing(false)
       toast({
@@ -136,6 +126,13 @@ export default function ClientDetail({ params }) {
     setIsEditing(false)
   }
 
+  const handleInputChange = (field) => (e) => {
+    setFormData({
+      ...formData,
+      [field]: e.target.value,
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen p-4 flex justify-center items-center">
@@ -169,24 +166,18 @@ export default function ClientDetail({ params }) {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="name">Nombre del Cliente</Label>
-          <FormTextInput id="name" readOnly={!isEditing} defaultValue={formData.name} ref={nameRef} required />
+          <Label htmlFor="name">Nombre</Label>
+          <FormTextInput id="name" readOnly={!isEditing} defaultValue={formData.name} onChange={handleInputChange("name")} required/>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="address">Dirección</Label>
-          <FormTextInput id="address" readOnly={!isEditing} defaultValue={formData.address} ref={addressRef} required />
+          <FormTextInput id="address" readOnly={!isEditing} defaultValue={formData.address} onChange={handleInputChange("address")} required/>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="phoneNumber">Número de Teléfono</Label>
-          <FormTextInput
-            id="phoneNumber"
-            readOnly={!isEditing}
-            defaultValue={formData.phoneNumber}
-            ref={phoneNumberRef}
-            required
-          />
+          <Label htmlFor="phoneNumber">Número de teléfono</Label>
+          <FormTextInput id="phoneNumber" readOnly={!isEditing} defaultValue={formData.phoneNumber} onChange={handleInputChange("phoneNumber")} required/>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 pt-4">

@@ -15,10 +15,7 @@ export default function NewClient() {
   const router = useRouter()
   const { toast } = useToast()
   const [saving, setSaving] = useState(false)
-
-  const nameRef = useRef(null)
-  const addressRef = useRef(null)
-  const phoneNumberRef = useRef(null)
+  const [formData, setFormData] = useState({});
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -26,9 +23,9 @@ export default function NewClient() {
 
     try {
       await postNewClient({
-        name: nameRef.current.value,
-        address: addressRef.current.value,
-        phoneNumber: phoneNumberRef.current.value,
+        name: formData.name,
+        address: formData.address,
+        phoneNumber: formData.phoneNumber,
       })
       toast({
         title: "Creado",
@@ -54,6 +51,13 @@ export default function NewClient() {
     router.push("/clientes")
   }
 
+  const handleInputChange = (field) => (e) => {
+    setFormData({
+      ...formData,
+      [field]: e.target.value,
+    });
+  };
+
   return (
     <div className="min-h-screen p-4 max-w-2xl mx-auto">
       <Link href="/clientes" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
@@ -65,18 +69,18 @@ export default function NewClient() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="name">Nombre del Cliente</Label>
-          <FormTextInput id="name" readOnly={false} defaultValue={""} ref={nameRef} required />
+          <Label htmlFor="name">Nombre</Label>
+          <FormTextInput id="name" readOnly={false} onChange={handleInputChange("name")} required/>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="address">Dirección</Label>
-          <FormTextInput id="address" readOnly={false} defaultValue={""} ref={addressRef} required />
+          <FormTextInput id="address" readOnly={false} onChange={handleInputChange("address")} required/>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="phoneNumber">Número de Teléfono</Label>
-          <FormTextInput id="phoneNumber" readOnly={false} defaultValue={""} ref={phoneNumberRef} required />
+          <FormTextInput id="phoneNumber" readOnly={false} onChange={handleInputChange("phoneNumber")} required/>
         </div>
 
         <Button type="submit" className="bg-green-600 hover:bg-green-700 mt-4 mr-2" disabled={saving}>

@@ -15,6 +15,7 @@ export default function NewProduct() {
   const router = useRouter()
   const { toast } = useToast()
   const [saving, setSaving] = useState(false)
+  const [formData, setFormData] = useState({})
 
   const nameRef = useRef(null)
 
@@ -24,7 +25,7 @@ export default function NewProduct() {
 
     try {
       await postNewProduct({
-        name: nameRef.current.value,
+        name: formData.name,
       })
       toast({
         title: "Creado",
@@ -50,6 +51,13 @@ export default function NewProduct() {
     router.push("/productos")
   }
 
+  const handleInputChange = (field) => (e) => {
+    setFormData({
+      ...formData,
+      [field]: e.target.value,
+    });
+  };
+
   return (
     <div className="min-h-screen p-4 max-w-2xl mx-auto">
       <Link href="/productos" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
@@ -62,7 +70,7 @@ export default function NewProduct() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="name">Nombre del Producto</Label>
-          <FormTextInput id="name" readOnly={false} defaultValue={""} ref={nameRef} required />
+          <FormTextInput id="name" readOnly={false} onChange={handleInputChange("name")} required/>
         </div>
 
         <Button type="submit" className="bg-green-600 hover:bg-green-700 mt-4 mr-2" disabled={saving}>

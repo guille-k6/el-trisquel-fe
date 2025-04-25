@@ -28,8 +28,6 @@ export default function ProductDetail({ params }) {
   const router = useRouter()
   const unwrappedParams = use(params)
   const { id } = unwrappedParams
-  // refs
-  const nameRef = useRef(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
@@ -68,11 +66,7 @@ export default function ProductDetail({ params }) {
     try {
       await postNewProduct({
         id: id,
-        name: nameRef.current.value,
-      })
-      // Update the product state to reflect changes
-      setFormData({
-        name: nameRef.current.value,
+        name: formData.name,
       })
       setIsEditing(false)
       toast({
@@ -128,6 +122,13 @@ export default function ProductDetail({ params }) {
     setIsEditing(false)
   }
 
+  const handleInputChange = (field) => (e) => {
+    setFormData({
+      ...formData,
+      [field]: e.target.value,
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen p-4 flex justify-center items-center">
@@ -162,7 +163,7 @@ export default function ProductDetail({ params }) {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="name">Nombre del Producto</Label>
-          <FormTextInput id="name" readOnly={!isEditing} defaultValue={formData.name} ref={nameRef} required />
+          <FormTextInput id="name" readOnly={!isEditing} defaultValue={formData.name} onChange={handleInputChange("name")} required/>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 pt-4">

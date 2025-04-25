@@ -49,8 +49,7 @@ export default function VehicleDetail({ params }) {
         duration: 8000,
       })
     } finally {
-      // Lo dejo cargando indefinidamente? Para mi si
-      // setLoading(false);
+      setLoading(false);
     }
   }
 
