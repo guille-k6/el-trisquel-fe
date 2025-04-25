@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, use } from "react"
+import { useState, useEffect, use } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { fetchVehicleById } from "@/lib/vehicle/api"
@@ -23,10 +23,7 @@ export default function VehicleDetail({ params }) {
   const router = useRouter()
   const unwrappedParams = use(params)
   const { id } = unwrappedParams
-  // refs
-  const nameRef = useRef(null);
-  const purchaseDateRef = useRef(null);
-  const priceRef = useRef(null);
+
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
@@ -52,7 +49,8 @@ export default function VehicleDetail({ params }) {
         duration: 8000,
       })
     } finally {
-      setLoading(false);
+      // Lo dejo cargando indefinidamente? Para mi si
+      // setLoading(false);
     }
   }
 
@@ -62,25 +60,10 @@ export default function VehicleDetail({ params }) {
    */
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setSaving(true)
-    console.log("voy a entrar al post");
-    console.log(formData);
-    console.log(purchaseDateRef.current.value);
-    
-    
     try {
-      await postNewVehicle({
-              id: id,
-              name: nameRef.current.value,
-              purchaseDate: purchaseDateRef.current.value,
-              purchaseDatePrice: Number(priceRef.current.value),
-            });
-      // Update the vehicle state to reflect changes
-      setFormData({
-        name: nameRef.current.value,
-        purchaseDate: purchaseDateRef.current.value,
-        purchaseDatePrice: priceRef.current.value,
-      })
+      await postNewVehicle(
+        {id: id, name: formData.name, purchaseDate: formData.purchaseDate, purchaseDatePrice: Number(formData.purchaseDatePrice)}
+      );
       setIsEditing(false)
       toast({
         title: "Actualizado",
@@ -135,24 +118,17 @@ export default function VehicleDetail({ params }) {
     setIsEditing(false)
   }
 
+  const handleInputChange = (field) => (e) => {
+    setFormData({
+      ...formData,
+      [field]: e.target.value,
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen p-4 flex justify-center items-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
-      </div>
-    )
-  }
-
-  if (!formData.name) {
-    return (
-      <div className="min-h-screen p-4">
-        <Link href="/vehiculos" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Volver a vehículos
-        </Link>
-        <div className="text-center py-10">
-          <p className="text-red-500">Vehículo no encontrado</p>
-        </div>
       </div>
     )
   }
@@ -173,7 +149,7 @@ export default function VehicleDetail({ params }) {
             id="name"
             readOnly={!isEditing}
             defaultValue={formData.name}
-            ref={nameRef}
+            onChange={handleInputChange("name")}
             required
           />
         </div>
@@ -183,8 +159,8 @@ export default function VehicleDetail({ params }) {
           <FormDatePicker
             id="purchaseDate"
             readOnly={!isEditing}
-            defaultValue={formData.purchaseDate}
-            ref={purchaseDateRef}
+            value={formData.purchaseDate}
+            onChange={handleInputChange("purchaseDate")}
             required
           />
         </div>
@@ -195,8 +171,8 @@ export default function VehicleDetail({ params }) {
             id="purchaseDatePrice"
             name="purchaseDatePrice"
             readOnly={!isEditing}
-            defaultValue={formData.purchaseDatePrice}
-            ref={priceRef}
+            value={formData.purchaseDatePrice}
+            onChange={handleInputChange("purchaseDatePrice")}
             required
           />
         </div>
