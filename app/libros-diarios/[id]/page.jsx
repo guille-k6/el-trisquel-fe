@@ -191,9 +191,7 @@ export default function LibroDiarioDetail({ params }) {
           authorized: item.authorized,
         })),
       }
-
       await postNewDailyBook(updatedLibroDiario)
-
       setIsEditing(false)
       toast({
         title: "Actualizado",
