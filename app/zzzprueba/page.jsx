@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react"
 import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
 import { fetchVehicles } from "@/lib/vehicle/api"
+import { FormCheckInput } from "@/components/ui/inputs/form-check"
 
 export default function Page() {
   const [vehicles, setVehicles] = useState([])
   const [selectedVehicles, setSelectedVehicles] = useState({})
+  const [isChecked, setChecked] = useState(false);
   
   const testData = [
     { num: 1, nombre: "pepe" },
@@ -33,6 +35,12 @@ export default function Page() {
     };
   }
 
+  function handleCheckChange(e){
+    console.log(e.target.checked);
+    
+    setChecked(e.target.checked)
+  }
+
   return (
     <div className="min-h-screen p-4 max-w-2xl mx-auto">
       <div>
@@ -48,6 +56,11 @@ export default function Page() {
             <label className="block text-sm font-medium mb-2">
               Vehicle for {data.nombre} (ID: {data.num})
             </label>
+            <FormCheckInput
+              value={isChecked}
+              onChange={handleCheckChange}
+              disabled={true}
+            />
             <FormCombo 
               options={vehicles}
               placeholder="Select a vehicle..."

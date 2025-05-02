@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { FormNumberInput } from "@/components/ui/inputs/form-number-input"
 import { FormDatePicker } from "@/components/ui/inputs/form-date-picker"
+import { FormCheckInput } from "@/components/ui/inputs/form-check"
 import { useToast } from "@/components/ui/toast"
 import { Card, CardContent } from "@/components/ui/card"
 import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
@@ -35,8 +36,6 @@ export default function LibroDiarioDetail({ params }) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
-  
-  // State for form data - combining all form fields
   const [formData, setFormData] = useState({
     id: "",
     date: "",
@@ -50,15 +49,13 @@ export default function LibroDiarioDetail({ params }) {
     ltTotalFlask: 0,
     items: []
   })
-  
-  // Reference data
   const [vehicles, setVehicles] = useState([])
   const [products, setProducts] = useState([])
   const [clients, setClients] = useState([])
 
   useEffect(() => {
     fetchData();
-  }, [id]); // Only re-fetch when ID changes
+  }, [id]);
 
   const fetchData = async () => {
     try {
@@ -99,7 +96,7 @@ export default function LibroDiarioDetail({ params }) {
     }
   }
 
-  // Handle changes to main form fields
+  // Header form fields
   const handleChange = (field, value) => {
     setFormData({
       ...formData,
@@ -107,44 +104,10 @@ export default function LibroDiarioDetail({ params }) {
     });
   }
 
-  // Handle selection for combo boxes
+  // Handle items form fields
   const handleItemChange = (index, field, value) => {
     const updatedItems = [...formData.items];
-    
-    if (field === "product") {
-      // If value is an object (when using FormCombo)
-      if (typeof value === 'object' && value !== null) {
-        updatedItems[index].product = {
-          id: value.id,
-          name: value.name
-        };
-      } else {
-        // If value is just the ID (when using another type of input)
-        updatedItems[index].product = {
-          id: value,
-          name: products.find((p) => p.id.toString() === value.toString())?.name || "",
-        };
-      }
-    } else if (field === "client") {
-      // If value is an object (when using FormCombo)
-      if (typeof value === 'object' && value !== null) {
-        updatedItems[index].client = {
-          id: value.id,
-          name: value.name
-        };
-      } else {
-        // If value is just the ID (when using another type of input)
-        updatedItems[index].client = {
-          id: value,
-          name: clients.find((c) => c.id.toString() === value.toString())?.name || "",
-        };
-      }
-    } else if (field === "authorized") {
-      updatedItems[index].authorized = value;
-    } else {
-      updatedItems[index][field] = value;
-    }
-  
+    updatedItems[index][field] = value
     setFormData({
       ...formData,
       items: updatedItems
@@ -155,21 +118,19 @@ export default function LibroDiarioDetail({ params }) {
     const newItem = {
       id: null, // Será asignado por el backend
       amount: 0,
-      product: { id: products[0]?.id || "", name: products[0]?.name || "" },
-      client: { id: clients[0]?.id || "", name: clients[0]?.name || "" },
+      product: {},
+      client: {},
       authorized: false,
     }
-    
     setFormData({
       ...formData,
-      items: [...formData.items, newItem]
+      items: [...formData.items, newItem] // Agrego item al final
     });
   }
 
   const removeItem = (index) => {
     const updatedItems = [...formData.items];
     updatedItems.splice(index, 1);
-    
     setFormData({
       ...formData,
       items: updatedItems
@@ -327,12 +288,12 @@ export default function LibroDiarioDetail({ params }) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <Label htmlFor="ltRemainingFlask">Litros Restantes en Frasco</Label>
+            <Label htmlFor="ltRemainingFlask">Litros restantes en termos</Label>
             <FormNumberInput id="ltRemainingFlask" readOnly={!isEditing} value={formData.ltRemainingFlask} onChange={(e) => handleChange('ltRemainingFlask', e.target.value)} required/>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="ltTotalFlask">Litros Totales en Frasco</Label>
+            <Label htmlFor="ltTotalFlask">Litros totales en termos</Label>
             <FormNumberInput id="ltTotalFlask" readOnly={!isEditing} value={formData.ltTotalFlask} onChange={(e) => handleChange('ltTotalFlask', e.target.value)} required/>
           </div>
         </div>
@@ -385,15 +346,8 @@ export default function LibroDiarioDetail({ params }) {
                         <FormNumberInput id={`item-amount-${index}`} readOnly={!isEditing} value={item.amount} onChange={(e) => handleItemChange(index, "amount", e.target.value)} required/>
                       </div>
 
-                      <div className="flex items-center space-x-2 mt-8">
-                        <input
-                          type="checkbox"
-                          id={`item-authorized-${index}`}
-                          className="rounded border-gray-300"
-                          disabled={!isEditing}
-                          checked={item.authorized || false}
-                          onChange={(e) => handleItemChange(index, "authorized", e.target.checked)}
-                        />
+                      <div className="flex items-center space-x-2 mt-4">
+                        <FormCheckInput id={`item-authorized-${index}`} value={item.authorized || false} onChange={(e) => handleItemChange(index, "authorized", e.target.checked)} disabled={!isEditing}/>
                         <Label htmlFor={`item-authorized-${index}`}>Autorizado</Label>
                       </div>
                     </div>
