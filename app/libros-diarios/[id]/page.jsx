@@ -108,33 +108,43 @@ export default function LibroDiarioDetail({ params }) {
   }
 
   // Handle selection for combo boxes
-  const handleSelectChange = (field, option) => {
-    setFormData({
-      ...formData,
-      [field]: option
-    });
-  }
-
-  // Handle item changes
   const handleItemChange = (index, field, value) => {
     const updatedItems = [...formData.items];
-
+    
     if (field === "product") {
-      updatedItems[index].product = {
-        id: value,
-        name: products.find((p) => p.id.toString() === value.toString())?.name || "",
+      // If value is an object (when using FormCombo)
+      if (typeof value === 'object' && value !== null) {
+        updatedItems[index].product = {
+          id: value.id,
+          name: value.name
+        };
+      } else {
+        // If value is just the ID (when using another type of input)
+        updatedItems[index].product = {
+          id: value,
+          name: products.find((p) => p.id.toString() === value.toString())?.name || "",
+        };
       }
     } else if (field === "client") {
-      updatedItems[index].client = {
-        id: value,
-        name: clients.find((c) => c.id.toString() === value.toString())?.name || "",
+      // If value is an object (when using FormCombo)
+      if (typeof value === 'object' && value !== null) {
+        updatedItems[index].client = {
+          id: value.id,
+          name: value.name
+        };
+      } else {
+        // If value is just the ID (when using another type of input)
+        updatedItems[index].client = {
+          id: value,
+          name: clients.find((c) => c.id.toString() === value.toString())?.name || "",
+        };
       }
     } else if (field === "authorized") {
-      updatedItems[index].authorized = value
+      updatedItems[index].authorized = value;
     } else {
-      updatedItems[index][field] = value
+      updatedItems[index][field] = value;
     }
-
+  
     setFormData({
       ...formData,
       items: updatedItems
@@ -277,109 +287,53 @@ export default function LibroDiarioDetail({ params }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <Label htmlFor="date">Fecha</Label>
-            <FormDatePicker 
-              id="date" 
-              readOnly={!isEditing} 
-              value={formData.date}
-              onChange={(value) => handleChange('date', value)}
-              required 
-            />
+            <FormDatePicker id="date" readOnly={!isEditing} value={formData.date}onChange={(value) => handleChange('date', value)} required />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="vehicleCombo" className="block text-sm font-medium mb-1">Vehículo</Label>
-            <FormCombo
-              id="vehicleCombo" 
-              options={vehicles} 
-              placeholder="Vehículo..." 
-              onChange={(option) => handleSelectChange('vehicle', option)}
-              readOnly={!isEditing}
-              defaultValue={formData.vehicle}
-              required
-            />
+            <FormCombo id="vehicleCombo" options={vehicles} placeholder="Vehículo..." onChange={(option) => handleChange('vehicle', option)} readOnly={!isEditing} defaultValue={formData.vehicle} required/>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <Label htmlFor="vehicleKmsBefore">Kilómetros Iniciales</Label>
-            <FormNumberInput
-              id="vehicleKmsBefore"
-              readOnly={!isEditing}
-              value={formData.vehicleKmsBefore}
-              onChange={(e) => handleChange('vehicleKmsBefore', e.target.value)}
-              required
-            />
+            <FormNumberInput id="vehicleKmsBefore" readOnly={!isEditing} value={formData.vehicleKmsBefore} onChange={(e) => handleChange('vehicleKmsBefore', e.target.value)} required/>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="vehicleKmsAfter">Kilómetros Finales</Label>
-            <FormNumberInput
-              id="vehicleKmsAfter"
-              readOnly={!isEditing}
-              value={formData.vehicleKmsAfter}
-              onChange={(e) => handleChange('vehicleKmsAfter', e.target.value)}
-              required
-            />
+            <FormNumberInput id="vehicleKmsAfter" readOnly={!isEditing} value={formData.vehicleKmsAfter} onChange={(e) => handleChange('vehicleKmsAfter', e.target.value)}required/>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-2">
             <Label htmlFor="kgTankBefore">Peso Tanque Inicial (kg)</Label>
-            <FormNumberInput
-              id="kgTankBefore"
-              readOnly={!isEditing}
-              value={formData.kgTankBefore}
-              onChange={(e) => handleChange('kgTankBefore', e.target.value)}
-              required
-            />
+            <FormNumberInput id="kgTankBefore" readOnly={!isEditing} value={formData.kgTankBefore} onChange={(e) => handleChange('kgTankBefore', e.target.value)} required/>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="kgTankAfter">Peso Tanque Final (kg)</Label>
-            <FormNumberInput
-              id="kgTankAfter"
-              readOnly={!isEditing}
-              value={formData.kgTankAfter}
-              onChange={(e) => handleChange('kgTankAfter', e.target.value)}
-              required
-            />
+            <FormNumberInput id="kgTankAfter" readOnly={!isEditing} value={formData.kgTankAfter} onChange={(e) => handleChange('kgTankAfter', e.target.value)} required  />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="ltExtractedTank">Litros Extraídos</Label>
-            <FormNumberInput
-              id="ltExtractedTank"
-              readOnly={!isEditing}
-              value={formData.ltExtractedTank}
-              onChange={(e) => handleChange('ltExtractedTank', e.target.value)}
-              required
-            />
+            <FormNumberInput id="ltExtractedTank" readOnly={!isEditing} value={formData.ltExtractedTank} onChange={(e) => handleChange('ltExtractedTank', e.target.value)} required/>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <Label htmlFor="ltRemainingFlask">Litros Restantes en Frasco</Label>
-            <FormNumberInput
-              id="ltRemainingFlask"
-              readOnly={!isEditing}
-              value={formData.ltRemainingFlask}
-              onChange={(e) => handleChange('ltRemainingFlask', e.target.value)}
-              required
-            />
+            <FormNumberInput id="ltRemainingFlask" readOnly={!isEditing} value={formData.ltRemainingFlask} onChange={(e) => handleChange('ltRemainingFlask', e.target.value)} required/>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="ltTotalFlask">Litros Totales en Frasco</Label>
-            <FormNumberInput
-              id="ltTotalFlask"
-              readOnly={!isEditing}
-              value={formData.ltTotalFlask}
-              onChange={(e) => handleChange('ltTotalFlask', e.target.value)}
-              required
-            />
+            <FormNumberInput id="ltTotalFlask" readOnly={!isEditing} value={formData.ltTotalFlask} onChange={(e) => handleChange('ltTotalFlask', e.target.value)} required/>
           </div>
         </div>
 
@@ -400,18 +354,12 @@ export default function LibroDiarioDetail({ params }) {
           ) : (
             <div className="space-y-4">
               {formData.items.map((item, index) => (
-                <Card key={index} className="overflow-hidden">
+                <Card key={index} className="">
                   <CardContent className="p-4">
                     <div className="flex justify-between items-start mb-4">
                       <h3 className="font-medium">Item #{index + 1}</h3>
                       {isEditing && (
-                        <Button
-                          type="button"
-                          onClick={() => removeItem(index)}
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                        >
+                        <Button type="button" onClick={() => removeItem(index)} variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50">
                           <X className="h-4 w-4" />
                         </Button>
                       )}
@@ -420,53 +368,21 @@ export default function LibroDiarioDetail({ params }) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor={`item-client-${index}`}>Cliente</Label>
-                        <select
-                          id={`item-client-${index}`}
-                          className={`w-full rounded-md border border-input px-3 py-2 ${!isEditing ? "bg-gray-100" : "bg-background"}`}
-                          disabled={!isEditing}
-                          value={item.client?.id || ""}
-                          onChange={(e) => handleItemChange(index, "client", e.target.value)}
-                          required
-                        >
-                          {clients.map((client) => (
-                            <option key={client.id} value={client.id}>
-                              {client.name}
-                            </option>
-                          ))}
-                        </select>
+                        <FormCombo id={`item-client-${index}`} options={clients} placeholder="Elegir cliente..." onChange={(selectedOption) => handleItemChange(index, "client", selectedOption)}
+                          displayKey="name" valueKey="id" defaultValue={item.client} readOnly={!isEditing}/>
                       </div>
 
                       <div className="space-y-2">
                         <Label htmlFor={`item-product-${index}`}>Producto</Label>
-                        <select
-                          id={`item-product-${index}`}
-                          className={`w-full rounded-md border border-input px-3 py-2 ${!isEditing ? "bg-gray-100" : "bg-background"}`}
-                          disabled={!isEditing}
-                          value={item.product?.id || ""}
-                          onChange={(e) => handleItemChange(index, "product", e.target.value)}
-                          required
-                        >
-                          {products.map((product) => (
-                            <option key={product.id} value={product.id}>
-                              {product.name}
-                            </option>
-                          ))}
-                        </select>
+                        <FormCombo id={`item-product-${index}`} options={products} placeholder="Elegir producto..." onChange={(selectedOption) => handleItemChange(index, "product", selectedOption)}
+                          displayKey="name" valueKey="id" defaultValue={item.product} readOnly={!isEditing}/>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                       <div className="space-y-2">
                         <Label htmlFor={`item-amount-${index}`}>Cantidad</Label>
-                        <input
-                          type="number"
-                          id={`item-amount-${index}`}
-                          className={`w-full rounded-md border border-input px-3 py-2 ${!isEditing ? "bg-gray-100" : "bg-background"}`}
-                          readOnly={!isEditing}
-                          value={item.amount || ""}
-                          onChange={(e) => handleItemChange(index, "amount", e.target.value)}
-                          required
-                        />
+                        <FormNumberInput id={`item-amount-${index}`} readOnly={!isEditing} value={item.amount} onChange={(e) => handleItemChange(index, "amount", e.target.value)} required/>
                       </div>
 
                       <div className="flex items-center space-x-2 mt-8">

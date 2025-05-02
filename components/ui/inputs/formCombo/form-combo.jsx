@@ -4,17 +4,7 @@ import { useState, useEffect } from "react"
 import { Check, ChevronsUpDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-const FormCombo = ({
-  options = [],
-  placeholder = "Selecciona...",
-  readOnly,
-  defaultValue,
-  onChange,
-  displayKey = "name",
-  valueKey = "id",
-  className,
-  ...props
-}) => {
+const FormCombo = ({options = [], placeholder = "Selecciona...", readOnly, defaultValue, onChange, displayKey = "name", valueKey = "id", className, ...props}) => {
   const [open, setOpen] = useState(false)
   const [value, setValue] = useState(() => {
     if (!defaultValue) return "";
@@ -161,10 +151,11 @@ const FormCombo = ({
       </div>
 
       {open && !readOnly && (
-        <div 
-          className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 shadow-lg"
-          data-combobox="dropdown"
-        >
+        <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 shadow-lg" data-combobox="dropdown"
+          style={{ 
+            position: 'absolute',
+            zIndex: 9999 
+          }}>
           {filteredOptions.length > 0 ? (
             filteredOptions.map((option, index) => (
               <div
