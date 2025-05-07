@@ -44,6 +44,17 @@ export default function Home() {
         </Link>
 
         <Link
+          href="/remitos"
+          className="flex flex-col items-center rounded-lg border bg-white p-6 shadow-sm transition-all hover:shadow-md"
+        >
+          <div className="mb-4 rounded-full bg-green-100 p-3">
+            <Package className="h-8 w-8 text-green-600" />
+          </div>
+          <h2 className="mb-2 text-xl font-semibold">ABM Remito</h2>
+          <p className="text-center text-sm text-gray-600">Administre su inventario de remitos</p>
+        </Link>
+
+        <Link
           href="/libros-diarios"
           className="flex flex-col items-center rounded-lg border bg-white p-6 shadow-sm transition-all hover:shadow-md"
         >
