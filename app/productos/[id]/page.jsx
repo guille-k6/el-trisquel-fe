@@ -4,20 +4,10 @@ import { useState, useEffect, useRef, use } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { fetchProductById } from "@/lib/product/api"
-import { ArrowLeft, Save, Trash2, Edit, X } from "lucide-react"
+import { ArrowLeft, Save, Edit, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+import { DeleteWithModal } from "@/components/ui/delete-with-modal"
 import { FormTextInput } from "@/components/ui/inputs/form-text-input"
 import { deleteProduct } from "@/lib/product/api"
 import { useToast } from "@/components/ui/toast"
@@ -32,6 +22,7 @@ export default function ProductDetail({ params }) {
   const [saving, setSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({})
+  const [formDataCopy, setFormDataCopy] = useState({})
 
   useEffect(() => {
     getProduct()
@@ -114,11 +105,17 @@ export default function ProductDetail({ params }) {
    */
   const handleEdit = (e) => {
     e.preventDefault()
+    // Deffensive copy of the original state of the formData before entenring the edition stage
+    const originalData = JSON.parse(JSON.stringify(formData));
+    setFormDataCopy(originalData);
     setIsEditing(true)
   }
 
   const handleCancel = (e) => {
     e.preventDefault()
+    // Restoring formData to its original state before entering in edition
+    setFormData({...formDataCopy})
+    setFormDataCopy({})
     setIsEditing(false)
   }
 
@@ -137,7 +134,7 @@ export default function ProductDetail({ params }) {
     )
   }
 
-  if (!formData.name) {
+  if (!formData.id) {
     return (
       <div className="min-h-screen p-4">
         <Link href="/productos" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
@@ -183,27 +180,7 @@ export default function ProductDetail({ params }) {
                 <Edit className="mr-2 h-4 w-4" /> Editar
               </Button>
 
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button type="button" variant="destructive">
-                    <Trash2 className="mr-2 h-4 w-4" /> Eliminar
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Esta acción no se puede deshacer. Esto eliminará permanentemente el producto.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-                      Eliminar
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <DeleteWithModal onDelete={handleDelete}></DeleteWithModal>
             </>
           )}
         </div>

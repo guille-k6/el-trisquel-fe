@@ -3,10 +3,13 @@
 import { FormTextInput } from "./form-text-input"
 import { formatPrice } from "@/lib/utils"
 
-function FormNumberInput({ readOnly, value, onChange, ...props }) {
+function FormNumberInput({ readOnly, value, onChange, currency, ...props }) {
+  if(value === null){
+    value = 0;
+  }
   if (readOnly) {
     return (
-      <FormTextInput readOnly value={formatPrice(value)} onChange={() => {}} required {...props}/>
+      <FormTextInput readOnly value={formatPrice(value, currency)} onChange={() => {}} required {...props}/>
     )
   }
   return (
@@ -16,4 +19,5 @@ function FormNumberInput({ readOnly, value, onChange, ...props }) {
   )
 }
 
+// currency = "ARS"
 export { FormNumberInput }

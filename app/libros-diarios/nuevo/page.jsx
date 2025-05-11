@@ -7,15 +7,17 @@ import { postNewDailyBook } from "@/lib/daily-book/api"
 import { fetchVehicles } from "@/lib/vehicle/api"
 import { fetchProducts } from "@/lib/product/api"
 import { fetchClients } from "@/lib/customer/api"
+import { fetchVouchers } from "@/lib/voucher/api"
 import { ArrowLeft, Save, X, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { FormNumberInput } from "@/components/ui/inputs/form-number-input"
 import { FormDatePicker } from "@/components/ui/inputs/form-date-picker"
-import { FormCheckInput } from "@/components/ui/inputs/form-check"
 import { useToast } from "@/components/ui/toast"
 import { Card, CardContent } from "@/components/ui/card"
 import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
+import { FormTextInput } from "@/components/ui/inputs/form-text-input"
+import { getTodayDateForInput } from "@/lib/utils"
 
 export default function NewLibroDiario() {
   const { toast } = useToast()
@@ -33,11 +35,17 @@ export default function NewLibroDiario() {
     ltExtractedTank: 0,
     ltRemainingFlask: 0,
     ltTotalFlask: 0,
+    pressureTankBefore: 0,
+    pressureTankAfter: 0,
+    nitrogenProvider: "",
     items: [],
   })
   const [vehicles, setVehicles] = useState([])
   const [products, setProducts] = useState([])
   const [clients, setClients] = useState([])
+  const [vouchers, setVouchers] = useState([])
+
+  const nitrogenProviders = [{ id: "Air Liquide", name: "Air Liquide" }, { id: "Linde", name: "Linde" }];
 
   useEffect(() => {
     fetchData()
@@ -46,15 +54,17 @@ export default function NewLibroDiario() {
   const fetchData = async () => {
     try {
       setLoading(true)
-      const [vehiclesData, productsData, clientsData] = await Promise.all([
+      const [vehiclesData, productsData, clientsData, vouchersData] = await Promise.all([
         fetchVehicles(),
         fetchProducts(),
         fetchClients(),
+        fetchVouchers(),
       ])
 
       setVehicles(vehiclesData)
       setProducts(productsData)
       setClients(clientsData)
+      setVouchers(vouchersData)
     } catch (error) {
       toast({
         title: "Error",
@@ -208,7 +218,7 @@ export default function NewLibroDiario() {
         Volver a libros diarios
       </Link>
 
-      <h1 className="text-2xl font-bold mb-6">Crear Nuevo Libro Diario</h1>
+      <h1 className="text-2xl font-bold mb-6">Nuevo Libro Diario</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -217,111 +227,172 @@ export default function NewLibroDiario() {
             <FormDatePicker
               id="date"
               value={formData.date}
-              onChange={(value) => handleChange("date", value)}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="vehicleCombo" className="block text-sm font-medium mb-1">
-              Vehículo
-            </Label>
-            <FormCombo
-              id="vehicleCombo"
-              options={vehicles}
-              placeholder="Vehículo..."
-              onChange={(option) => handleChange("vehicle", option)}
+              onChange={(e) => handleChange("date", e.target.value)}
               required
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="vehicleKmsBefore">Kilómetros Iniciales</Label>
-            <FormNumberInput
-              id="vehicleKmsBefore"
-              value={formData.vehicleKmsBefore}
-              onChange={(e) => handleChange("vehicleKmsBefore", e.target.value)}
-              required
-            />
-          </div>
+          <div className="mt-4 mb-4">
+          <h2 className="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Información del Vehículo</h2>
+          <div className="py-2 rounded-lg">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="space-y-2">
+                <Label htmlFor="vehicleCombo" className="block text-sm font-medium mb-1">
+                  Vehículo
+                </Label>
+                <FormCombo
+                  id="vehicleCombo"
+                  options={vehicles}
+                  placeholder="Vehículo..."
+                  onChange={(option) => handleChange("vehicle", option)}
+                  readOnly={false}
+                  defaultValue={formData.vehicle}
+                  required
+                />
+              </div>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="vehicleKmsAfter">Kilómetros Finales</Label>
-            <FormNumberInput
-              id="vehicleKmsAfter"
-              value={formData.vehicleKmsAfter}
-              onChange={(e) => handleChange("vehicleKmsAfter", e.target.value)}
-              required
-            />
-          </div>
-        </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="vehicleKmsBefore">Kilómetros Iniciales</Label>
+                <FormNumberInput
+                  id="vehicleKmsBefore"
+                  readOnly={false}
+                  value={formData.vehicleKmsBefore}
+                  onChange={(e) => handleChange("vehicleKmsBefore", e.target.value)}
+                  required
+                />
+              </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="kgTankBefore">Peso Tanque Inicial (kg)</Label>
-            <FormNumberInput
-              id="kgTankBefore"
-              value={formData.kgTankBefore}
-              onChange={(e) => handleChange("kgTankBefore", e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="kgTankAfter">Peso Tanque Final (kg)</Label>
-            <FormNumberInput
-              id="kgTankAfter"
-              value={formData.kgTankAfter}
-              onChange={(e) => handleChange("kgTankAfter", e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="ltExtractedTank">Litros Extraídos</Label>
-            <FormNumberInput
-              id="ltExtractedTank"
-              value={formData.ltExtractedTank}
-              onChange={(e) => handleChange("ltExtractedTank", e.target.value)}
-              required
-            />
+              <div className="space-y-2">
+                <Label htmlFor="vehicleKmsAfter">Kilómetros Finales</Label>
+                <FormNumberInput
+                  id="vehicleKmsAfter"
+                  readOnly={false}
+                  value={formData.vehicleKmsAfter}
+                  onChange={(e) => handleChange("vehicleKmsAfter", e.target.value)}
+                  required
+                />
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="ltRemainingFlask">Litros restantes en termos</Label>
-            <FormNumberInput
-              id="ltRemainingFlask"
-              value={formData.ltRemainingFlask}
-              onChange={(e) => handleChange("ltRemainingFlask", e.target.value)}
-              required
-            />
-          </div>
+        <div className="mt-8 mb-4">
+          <h2 className="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Información del Tanque</h2>
+          <div className="py-2 rounded-lg">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <div className="space-y-2">
+                <Label htmlFor="nitrogenProvider">Proveedor</Label>
+                <FormCombo 
+                  id="nitrogenProviderCombo" 
+                  options={nitrogenProviders} 
+                  placeholder="Proveedor de nitrógeno..." 
+                  onChange={(option) => handleChange("nitrogenProvider", option.id)}
+                  readOnly={false} 
+                  defaultValue={formData.nitrogenProvider} 
+                  required
+                />
+              </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="ltTotalFlask">Litros totales en termos</Label>
-            <FormNumberInput
-              id="ltTotalFlask"
-              value={formData.ltTotalFlask}
-              onChange={(e) => handleChange("ltTotalFlask", e.target.value)}
-              required
-            />
+              <div className="space-y-2">
+                <Label htmlFor="kgTankBefore">Peso Inicial</Label>
+                <FormNumberInput
+                  id="kgTankBefore"
+                  readOnly={false}
+                  value={formData.kgTankBefore}
+                  onChange={(e) => handleChange("kgTankBefore", e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="kgTankAfter">Peso Final</Label>
+                <FormNumberInput
+                  id="kgTankAfter"
+                  readOnly={false}
+                  value={formData.kgTankAfter}
+                  onChange={(e) => handleChange("kgTankAfter", e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="ltExtractedTank">Litros Extraídos</Label>
+                <FormNumberInput
+                  id="ltExtractedTank"
+                  readOnly={false}
+                  value={formData.ltExtractedTank}
+                  onChange={(e) => handleChange("ltExtractedTank", e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="pressureTankBefore">Presión Inicial</Label>
+                <FormNumberInput
+                  id="pressureTankBefore"
+                  readOnly={false}
+                  value={formData.pressureTankBefore}
+                  onChange={(e) => handleChange("pressureTankBefore", e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="pressureTankAfter">Presión Final</Label>
+                <FormNumberInput
+                  id="pressureTankAfter"
+                  readOnly={false}
+                  value={formData.pressureTankAfter}
+                  onChange={(e) => handleChange("pressureTankAfter", e.target.value)}
+                  required
+                />
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="pt-4 border-t border-gray-200">
+        <div className="mt-8 mb-4">
+          <h2 className="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Información de Termos</h2>
+          <div className="py-2 rounded-lg">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="ltRemainingFlask">Litros restantes en termos</Label>
+                <FormNumberInput
+                  id="ltRemainingFlask"
+                  readOnly={false}
+                  value={formData.ltRemainingFlask}
+                  onChange={(e) => handleChange("ltRemainingFlask", e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="ltTotalFlask">Litros totales en termos</Label>
+                <FormNumberInput
+                  id="ltTotalFlask"
+                  readOnly={false}
+                  value={formData.ltTotalFlask}
+                  onChange={(e) => handleChange("ltTotalFlask", e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8 mb-4">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Items</h2>
+            <h2 className="text-lg font-semibold text-gray-700 border-b pb-2">Descargas de nitrógeno</h2>
             <Button type="button" onClick={addItem} variant="outline" size="sm">
-              <Plus className="mr-2 h-4 w-4" /> Agregar Item
+              <Plus className="mr-2 h-4 w-4" /> Agregar descarga
             </Button>
           </div>
 
           {formData.items.length === 0 ? (
-            <div className="text-center py-6 bg-gray-50 rounded-lg">
+            <div className="text-center py-6 border rounded-lg">
               <p className="text-gray-500">No hay items registrados</p>
             </div>
           ) : (
@@ -329,8 +400,8 @@ export default function NewLibroDiario() {
               {formData.items.map((item, index) => (
                 <Card key={index} className="">
                   <CardContent className="p-4">
-                    <div className="flex justify-between items-start mb-4">
-                      <h3 className="font-medium">Item #{index + 1}</h3>
+                    <div className="flex justify-between items-start">
+                      <h3 className="font-medium">Descarga #{index + 1}</h3>
                       <Button
                         type="button"
                         onClick={() => removeItem(index)}
@@ -352,6 +423,9 @@ export default function NewLibroDiario() {
                           onChange={(selectedOption) => handleItemChange(index, "client", selectedOption)}
                           displayKey="name"
                           valueKey="id"
+                          defaultValue={item.client}
+                          readOnly={false}
+                          required
                         />
                       </div>
 
@@ -364,28 +438,68 @@ export default function NewLibroDiario() {
                           onChange={(selectedOption) => handleItemChange(index, "product", selectedOption)}
                           displayKey="name"
                           valueKey="id"
+                          defaultValue={item.product}
+                          readOnly={false}
+                          required
                         />
                       </div>
-                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                       <div className="space-y-2">
                         <Label htmlFor={`item-amount-${index}`}>Cantidad</Label>
                         <FormNumberInput
                           id={`item-amount-${index}`}
+                          readOnly={false}
                           value={item.amount}
                           onChange={(e) => handleItemChange(index, "amount", e.target.value)}
                           required
                         />
                       </div>
 
-                      <div className="flex items-center space-x-2 mt-4">
-                        <FormCheckInput
-                          id={`item-authorized-${index}`}
-                          value={item.authorized || false}
-                          onChange={(e) => handleItemChange(index, "authorized", e.target.checked)}
+                      <div className="space-y-2">
+                        <Label htmlFor={`item-voucher-${index}`}>Remito</Label>
+                        <FormCombo
+                          id={`item-voucher-${index}`}
+                          options={vouchers}
+                          placeholder="Elegir remito..."
+                          onChange={(selectedOption) => handleItemChange(index, "voucher", selectedOption)}
+                          displayKey="name"
+                          valueKey="id"
+                          defaultValue={item.voucher}
+                          readOnly={false}
                         />
-                        <Label htmlFor={`item-authorized-${index}`}>Autorizado</Label>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor={`item-date-${index}`}>Fecha</Label>
+                        <FormDatePicker
+                          id={`item-date-${index}`}
+                          readOnly={false}
+                          value={getTodayDateForInput()}
+                          onChange={(e) => handleItemChange(index, "date", e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor={`item-payment-${index}`}>Pago</Label>
+                        <FormNumberInput
+                          id={`item-payment-${index}`}
+                          readOnly={false}
+                          value={item.payment || 0}
+                          onChange={(e) => handleItemChange(index, "payment", e.target.value)}
+                        />
+                      </div>
+
+                      <div className="space-y-2 md:col-span-2">
+                        <Label htmlFor={`item-observations-${index}`}>Observaciones</Label>
+                        <FormTextInput
+                          id={`item-observations-${index}`}
+                          placeholder={"Ingrese observaciones..."}
+                          readOnly={false}
+                          value={item.observations || ""}
+                          onChange={(e) => handleItemChange(index, "observations", e.target.value)}
+                          className="mt-1 w-full"
+                        />
                       </div>
                     </div>
                   </CardContent>

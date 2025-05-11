@@ -4,29 +4,21 @@ import { useState, useEffect, use } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { fetchDailyBookById, deleteDailyBook, postNewDailyBook } from "@/lib/daily-book/api"
-import { fetchVehicles } from "@/lib/vehicle/api";
-import { fetchProducts } from "@/lib/product/api";
-import { fetchClients } from "@/lib/customer/api";
-import { ArrowLeft, Save, Trash2, Edit, X, Plus } from "lucide-react"
+import { fetchVehicles } from "@/lib/vehicle/api"
+import { fetchProducts } from "@/lib/product/api"
+import { fetchClients } from "@/lib/customer/api"
+import { ArrowLeft, Save, Edit, X, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+import { DeleteWithModal } from "@/components/ui/delete-with-modal"
 import { FormNumberInput } from "@/components/ui/inputs/form-number-input"
 import { FormDatePicker } from "@/components/ui/inputs/form-date-picker"
+import { FormTextInput } from "@/components/ui/inputs/form-text-input"
 import { FormCheckInput } from "@/components/ui/inputs/form-check"
 import { useToast } from "@/components/ui/toast"
 import { Card, CardContent } from "@/components/ui/card"
 import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
+import { fetchVouchers } from "@/lib/voucher/api"
 
 export default function LibroDiarioDetail({ params }) {
   const { toast } = useToast()
@@ -47,24 +39,32 @@ export default function LibroDiarioDetail({ params }) {
     ltExtractedTank: 0,
     ltRemainingFlask: 0,
     ltTotalFlask: 0,
-    items: []
+    pressureTankBefore: 0,
+    pressureTankAfter: 0,
+    nitrogenProvider: "",
+    items: [],
   })
+  const [formDataCopy, setFormDataCopy] = useState({})
   const [vehicles, setVehicles] = useState([])
   const [products, setProducts] = useState([])
   const [clients, setClients] = useState([])
+  const [vouchers, setVouchers] = useState([])
+
+  const nitrogenProviders = [{ id: "Air Liquide", name: "Air Liquide" }, { id: "Linde", name: "Linde" }];
 
   useEffect(() => {
-    fetchData();
-  }, [id]);
+    fetchData()
+  }, [id])
 
   const fetchData = async () => {
     try {
-      setLoading(true);
-      const [libroDiarioData, vehiclesData, productsData, clientsData] = await Promise.all([
+      setLoading(true)
+      const [libroDiarioData, vehiclesData, productsData, clientsData, vouchersData] = await Promise.all([
         fetchDailyBookById(id),
         fetchVehicles(),
         fetchProducts(),
         fetchClients(),
+        fetchVouchers(),
       ])
 
       setFormData({
@@ -75,15 +75,19 @@ export default function LibroDiarioDetail({ params }) {
         vehicleKmsAfter: libroDiarioData.vehicleKmsAfter,
         kgTankBefore: libroDiarioData.kgTankBefore,
         kgTankAfter: libroDiarioData.kgTankAfter,
+        pressureTankBefore: libroDiarioData.pressureTankBefore,
+        pressureTankAfter: libroDiarioData.pressureTankAfter,
         ltExtractedTank: libroDiarioData.ltExtractedTank,
         ltRemainingFlask: libroDiarioData.ltRemainingFlask,
         ltTotalFlask: libroDiarioData.ltTotalFlask,
-        items: libroDiarioData.items || []
+        nitrogenProvider: libroDiarioData.nitrogenProvider,
+        items: libroDiarioData.items || [],
       })
-      
+
       setVehicles(vehiclesData)
       setProducts(productsData)
       setClients(clientsData)
+      setVouchers(vouchersData)
     } catch (error) {
       toast({
         title: "Error",
@@ -100,18 +104,18 @@ export default function LibroDiarioDetail({ params }) {
   const handleChange = (field, value) => {
     setFormData({
       ...formData,
-      [field]: value
-    });
+      [field]: value,
+    })
   }
 
   // Handle items form fields
   const handleItemChange = (index, field, value) => {
-    const updatedItems = [...formData.items];
+    const updatedItems = [...formData.items]
     updatedItems[index][field] = value
     setFormData({
       ...formData,
-      items: updatedItems
-    });
+      items: updatedItems,
+    })
   }
 
   const addItem = () => {
@@ -124,17 +128,19 @@ export default function LibroDiarioDetail({ params }) {
     }
     setFormData({
       ...formData,
-      items: [...formData.items, newItem] // Agrego item al final
-    });
+      items: [...formData.items, newItem], // Agrego item al final
+    })
   }
 
+
+
   const removeItem = (index) => {
-    const updatedItems = [...formData.items];
-    updatedItems.splice(index, 1);
+    const updatedItems = [...formData.items]
+    updatedItems.splice(index, 1)
     setFormData({
       ...formData,
-      items: updatedItems
-    });
+      items: updatedItems,
+    })
   }
 
   const handleSubmit = async (e) => {
@@ -151,17 +157,28 @@ export default function LibroDiarioDetail({ params }) {
         vehicleKmsAfter: Number(formData.vehicleKmsAfter),
         kgTankBefore: Number(formData.kgTankBefore),
         kgTankAfter: Number(formData.kgTankAfter),
+        pressureTankBefore: Number(formData.pressureTankBefore),
+        pressureTankAfter: Number(formData.pressureTankAfter),
         ltExtractedTank: Number(formData.ltExtractedTank),
         ltRemainingFlask: Number(formData.ltRemainingFlask),
         ltTotalFlask: Number(formData.ltTotalFlask),
+        nitrogenProvider: formData.nitrogenProvider,
         items: formData.items.map((item) => ({
           id: item.id,
           amount: Number(item.amount),
           product: { id: item.product.id },
           client: { id: item.client.id },
           authorized: item.authorized,
+          voucher: item.voucher,
+          date: item.date,
+          payment: Number(item.payment),
+          observations: item.observations
         })),
       }
+      console.log("voy a mandar a actualizar el updatedLibroDiario:");
+      console.log(updatedLibroDiario);
+      
+      
       await postNewDailyBook(updatedLibroDiario)
       setIsEditing(false)
       toast({
@@ -204,13 +221,19 @@ export default function LibroDiarioDetail({ params }) {
   }
 
   const handleEdit = (e) => {
-    e.preventDefault();
-    setIsEditing(true);
+    e.preventDefault()
+    // Deffensive copy of the original state of the formData before entenring the edition stage
+    const originalData = JSON.parse(JSON.stringify(formData));
+    setFormDataCopy(originalData);
+    setIsEditing(true)
   }
 
   const handleCancel = (e) => {
-    e.preventDefault();
-    setIsEditing(false);
+    e.preventDefault()
+    // Restoring formData to its original state before entering in edition
+    setFormData({...formDataCopy})
+    setFormDataCopy({})
+    setIsEditing(false)
   }
 
   if (loading) {
@@ -245,71 +268,181 @@ export default function LibroDiarioDetail({ params }) {
       <h1 className="text-2xl font-bold mb-6">{isEditing ? "Editar Libro Diario" : `Libro Diario #${formData.id}`}</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div className="space-y-2">
             <Label htmlFor="date">Fecha</Label>
-            <FormDatePicker id="date" readOnly={!isEditing} value={formData.date}onChange={(value) => handleChange('date', value)} required />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="vehicleCombo" className="block text-sm font-medium mb-1">Vehículo</Label>
-            <FormCombo id="vehicleCombo" options={vehicles} placeholder="Vehículo..." onChange={(option) => handleChange('vehicle', option)} readOnly={!isEditing} defaultValue={formData.vehicle} required/>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="vehicleKmsBefore">Kilómetros Iniciales</Label>
-            <FormNumberInput id="vehicleKmsBefore" readOnly={!isEditing} value={formData.vehicleKmsBefore} onChange={(e) => handleChange('vehicleKmsBefore', e.target.value)} required/>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="vehicleKmsAfter">Kilómetros Finales</Label>
-            <FormNumberInput id="vehicleKmsAfter" readOnly={!isEditing} value={formData.vehicleKmsAfter} onChange={(e) => handleChange('vehicleKmsAfter', e.target.value)}required/>
+            <FormDatePicker
+              id="date"
+              readOnly={!isEditing}
+              value={formData.date}
+              onChange={(e) => handleChange("date", e.target.value)}
+              required
+            />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="kgTankBefore">Peso Tanque Inicial (kg)</Label>
-            <FormNumberInput id="kgTankBefore" readOnly={!isEditing} value={formData.kgTankBefore} onChange={(e) => handleChange('kgTankBefore', e.target.value)} required/>
-          </div>
+        <div className="mt-4 mb-4">
+          <h2 className="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Información del Vehículo</h2>
+          <div className="py-2 rounded-lg">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="space-y-2">
+                <Label htmlFor="vehicleCombo" className="block text-sm font-medium mb-1">
+                  Vehículo
+                </Label>
+                <FormCombo
+                  id="vehicleCombo"
+                  options={vehicles}
+                  placeholder="Vehículo..."
+                  onChange={(option) => handleChange("vehicle", option)}
+                  readOnly={!isEditing}
+                  defaultValue={formData.vehicle}
+                  required
+                />
+              </div>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="kgTankAfter">Peso Tanque Final (kg)</Label>
-            <FormNumberInput id="kgTankAfter" readOnly={!isEditing} value={formData.kgTankAfter} onChange={(e) => handleChange('kgTankAfter', e.target.value)} required  />
-          </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="vehicleKmsBefore">Kilómetros Iniciales</Label>
+                <FormNumberInput
+                  id="vehicleKmsBefore"
+                  readOnly={!isEditing}
+                  value={formData.vehicleKmsBefore}
+                  onChange={(e) => handleChange("vehicleKmsBefore", e.target.value)}
+                  required
+                />
+              </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="ltExtractedTank">Litros Extraídos</Label>
-            <FormNumberInput id="ltExtractedTank" readOnly={!isEditing} value={formData.ltExtractedTank} onChange={(e) => handleChange('ltExtractedTank', e.target.value)} required/>
+              <div className="space-y-2">
+                <Label htmlFor="vehicleKmsAfter">Kilómetros Finales</Label>
+                <FormNumberInput
+                  id="vehicleKmsAfter"
+                  readOnly={!isEditing}
+                  value={formData.vehicleKmsAfter}
+                  onChange={(e) => handleChange("vehicleKmsAfter", e.target.value)}
+                  required
+                />
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="ltRemainingFlask">Litros restantes en termos</Label>
-            <FormNumberInput id="ltRemainingFlask" readOnly={!isEditing} value={formData.ltRemainingFlask} onChange={(e) => handleChange('ltRemainingFlask', e.target.value)} required/>
-          </div>
+        <div className="mt-8 mb-4">
+          <h2 className="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Información del Tanque</h2>
+          <div className="py-2 rounded-lg">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <div className="space-y-2">
+                <Label htmlFor="nitrogenProvider">Proveedor</Label>
+                <FormCombo 
+                  id="nitrogenProviderCombo" 
+                  options={nitrogenProviders} 
+                  placeholder="Proveedor de nitrógeno..." 
+                  onChange={(option) => handleChange("nitrogenProvider", option.id)}
+                  readOnly={!isEditing} 
+                  defaultValue={formData.nitrogenProvider} 
+                  required
+                />
+              </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="ltTotalFlask">Litros totales en termos</Label>
-            <FormNumberInput id="ltTotalFlask" readOnly={!isEditing} value={formData.ltTotalFlask} onChange={(e) => handleChange('ltTotalFlask', e.target.value)} required/>
+              <div className="space-y-2">
+                <Label htmlFor="kgTankBefore">Peso Inicial</Label>
+                <FormNumberInput
+                  id="kgTankBefore"
+                  readOnly={!isEditing}
+                  value={formData.kgTankBefore}
+                  onChange={(e) => handleChange("kgTankBefore", e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="kgTankAfter">Peso Final</Label>
+                <FormNumberInput
+                  id="kgTankAfter"
+                  readOnly={!isEditing}
+                  value={formData.kgTankAfter}
+                  onChange={(e) => handleChange("kgTankAfter", e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="ltExtractedTank">Litros Extraídos</Label>
+                <FormNumberInput
+                  id="ltExtractedTank"
+                  readOnly={!isEditing}
+                  value={formData.ltExtractedTank}
+                  onChange={(e) => handleChange("ltExtractedTank", e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="pressureTankBefore">Presión Inicial</Label>
+                <FormNumberInput
+                  id="pressureTankBefore"
+                  readOnly={!isEditing}
+                  value={formData.pressureTankBefore}
+                  onChange={(e) => handleChange("pressureTankBefore", e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="pressureTankAfter">Presión Final</Label>
+                <FormNumberInput
+                  id="pressureTankAfter"
+                  readOnly={!isEditing}
+                  value={formData.pressureTankAfter}
+                  onChange={(e) => handleChange("pressureTankAfter", e.target.value)}
+                  required
+                />
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="pt-4 border-t border-gray-200">
+        <div className="mt-8 mb-4">
+          <h2 className="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Información de Termos</h2>
+          <div className="py-2 rounded-lg">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="ltRemainingFlask">Litros restantes en termos</Label>
+                <FormNumberInput
+                  id="ltRemainingFlask"
+                  readOnly={!isEditing}
+                  value={formData.ltRemainingFlask}
+                  onChange={(e) => handleChange("ltRemainingFlask", e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="ltTotalFlask">Litros totales en termos</Label>
+                <FormNumberInput
+                  id="ltTotalFlask"
+                  readOnly={!isEditing}
+                  value={formData.ltTotalFlask}
+                  onChange={(e) => handleChange("ltTotalFlask", e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8 mb-4">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Items</h2>
+            <h2 className="text-lg font-semibold text-gray-700 border-b pb-2">Descargas de nitrógeno</h2>
             {isEditing && (
               <Button type="button" onClick={addItem} variant="outline" size="sm">
-                <Plus className="mr-2 h-4 w-4" /> Agregar Item
+                <Plus className="mr-2 h-4 w-4" /> Agregar descarga
               </Button>
             )}
           </div>
 
           {formData.items.length === 0 ? (
-            <div className="text-center py-6 bg-gray-50 rounded-lg">
+            <div className="text-center py-6 border rounded-lg">
               <p className="text-gray-500">No hay items registrados</p>
             </div>
           ) : (
@@ -317,10 +450,16 @@ export default function LibroDiarioDetail({ params }) {
               {formData.items.map((item, index) => (
                 <Card key={index} className="">
                   <CardContent className="p-4">
-                    <div className="flex justify-between items-start mb-4">
-                      <h3 className="font-medium">Item #{index + 1}</h3>
+                    <div className="flex justify-between items-start">
+                      <h3 className="font-medium">Descarga #{index + 1}</h3>
                       {isEditing && (
-                        <Button type="button" onClick={() => removeItem(index)} variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                        <Button
+                          type="button"
+                          onClick={() => removeItem(index)}
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        >
                           <X className="h-4 w-4" />
                         </Button>
                       )}
@@ -329,26 +468,90 @@ export default function LibroDiarioDetail({ params }) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor={`item-client-${index}`}>Cliente</Label>
-                        <FormCombo id={`item-client-${index}`} options={clients} placeholder="Elegir cliente..." onChange={(selectedOption) => handleItemChange(index, "client", selectedOption)}
-                          displayKey="name" valueKey="id" defaultValue={item.client} readOnly={!isEditing}/>
+                        <FormCombo
+                          id={`item-client-${index}`}
+                          options={clients}
+                          placeholder="Elegir cliente..."
+                          onChange={(selectedOption) => handleItemChange(index, "client", selectedOption)}
+                          displayKey="name"
+                          valueKey="id"
+                          defaultValue={item.client}
+                          readOnly={!isEditing}
+                          required
+                        />
                       </div>
 
                       <div className="space-y-2">
                         <Label htmlFor={`item-product-${index}`}>Producto</Label>
-                        <FormCombo id={`item-product-${index}`} options={products} placeholder="Elegir producto..." onChange={(selectedOption) => handleItemChange(index, "product", selectedOption)}
-                          displayKey="name" valueKey="id" defaultValue={item.product} readOnly={!isEditing}/>
+                        <FormCombo
+                          id={`item-product-${index}`}
+                          options={products}
+                          placeholder="Elegir producto..."
+                          onChange={(selectedOption) => handleItemChange(index, "product", selectedOption)}
+                          displayKey="name"
+                          valueKey="id"
+                          defaultValue={item.product}
+                          readOnly={!isEditing}
+                          required
+                        />
                       </div>
-                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                       <div className="space-y-2">
                         <Label htmlFor={`item-amount-${index}`}>Cantidad</Label>
-                        <FormNumberInput id={`item-amount-${index}`} readOnly={!isEditing} value={item.amount} onChange={(e) => handleItemChange(index, "amount", e.target.value)} required/>
+                        <FormNumberInput
+                          id={`item-amount-${index}`}
+                          readOnly={!isEditing}
+                          value={item.amount}
+                          onChange={(e) => handleItemChange(index, "amount", e.target.value)}
+                          required
+                        />
                       </div>
 
-                      <div className="flex items-center space-x-2 mt-4">
-                        <FormCheckInput id={`item-authorized-${index}`} value={item.authorized || false} onChange={(e) => handleItemChange(index, "authorized", e.target.checked)} disabled={!isEditing}/>
-                        <Label htmlFor={`item-authorized-${index}`}>Autorizado</Label>
+                      <div className="space-y-2">
+                        <Label htmlFor={`item-voucher-${index}`}>Remito</Label>
+                        <FormCombo
+                          id={`item-voucher-${index}`}
+                          options={vouchers}
+                          placeholder="Elegir remito..."
+                          onChange={(selectedOption) => handleItemChange(index, "voucher", selectedOption)}
+                          displayKey="name"
+                          valueKey="id"
+                          defaultValue={item.voucher}
+                          readOnly={!isEditing}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor={`item-date-${index}`}>Fecha</Label>
+                        <FormDatePicker
+                          id={`item-date-${index}`}
+                          readOnly={!isEditing}
+                          value={item.date}
+                          onChange={(e) => handleItemChange(index, "date", e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor={`item-payment-${index}`}>Pago</Label>
+                        <FormNumberInput
+                          id={`item-payment-${index}`}
+                          readOnly={!isEditing}
+                          value={item.payment || 0}
+                          onChange={(e) => handleItemChange(index, "payment", e.target.value)}
+                        />
+                      </div>
+
+                      <div className="space-y-2 md:col-span-2">
+                        <Label htmlFor={`item-observations-${index}`}>Observaciones</Label>
+                        <FormTextInput
+                          id={`item-observations-${index}`}
+                          placeholder={isEditing ? "Ingrese observaciones..." : "Sin observaciones"}
+                          readOnly={!isEditing}
+                          value={item.observations || ""}
+                          onChange={(e) => handleItemChange(index, "observations", e.target.value)}
+                          className="mt-1 w-full"
+                        />
                       </div>
                     </div>
                   </CardContent>
@@ -384,27 +587,7 @@ export default function LibroDiarioDetail({ params }) {
                 <Edit className="mr-2 h-4 w-4" /> Editar
               </Button>
 
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button type="button" variant="destructive">
-                    <Trash2 className="mr-2 h-4 w-4" /> Eliminar
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Esta acción no se puede deshacer. Esto eliminará permanentemente el libro diario.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-                      Eliminar
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <DeleteWithModal onDelete={handleDelete}></DeleteWithModal>
             </>
           )}
         </div>

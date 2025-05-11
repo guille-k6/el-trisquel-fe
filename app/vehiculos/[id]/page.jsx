@@ -4,13 +4,10 @@ import { useState, useEffect, use } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { fetchVehicleById } from "@/lib/vehicle/api"
-import { ArrowLeft, Save, Trash2, Edit, X } from "lucide-react"
+import { ArrowLeft, Save, Edit, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
-  AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
-} from "@/components/ui/alert-dialog"
+import { DeleteWithModal } from "@/components/ui/delete-with-modal"
 import { FormTextInput } from "@/components/ui/inputs/form-text-input"
 import { FormDatePicker } from "@/components/ui/inputs/form-date-picker";
 import { FormNumberInput } from "@/components/ui/inputs/form-number-input"
@@ -28,6 +25,7 @@ export default function VehicleDetail({ params }) {
   const [saving, setSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({})
+  const [formDataCopy, setFormDataCopy] = useState({})
   
   useEffect(() => {
     getVehicle()
@@ -104,16 +102,21 @@ export default function VehicleDetail({ params }) {
   }
 
   /**
-   * Set the form state to 'editing'
-   * @param {*} e 
+   * Handles the 'editing' state of a form. It set it to TRUE'
    */
   const handleEdit = (e) => {
     e.preventDefault()
+    // Deffensive copy of the original state of the formData before entenring the edition stage
+    const originalData = JSON.parse(JSON.stringify(formData));
+    setFormDataCopy(originalData);
     setIsEditing(true)
   }
 
   const handleCancel = (e) => {
     e.preventDefault();
+    // Restoring formData to its original state before entering in edition
+    setFormData({...formDataCopy})
+    setFormDataCopy({})
     setIsEditing(false)
   }
 
@@ -147,7 +150,7 @@ export default function VehicleDetail({ params }) {
           <FormTextInput
             id="name"
             readOnly={!isEditing}
-            defaultValue={formData.name}
+            value={formData.name}
             onChange={handleInputChange("name")}
             required
           />
@@ -173,6 +176,7 @@ export default function VehicleDetail({ params }) {
             value={formData.purchaseDatePrice}
             onChange={handleInputChange("purchaseDatePrice")}
             required
+            currency="USD"
           />
         </div>
 
@@ -193,27 +197,7 @@ export default function VehicleDetail({ params }) {
                 <Edit className="mr-2 h-4 w-4" /> Editar
               </Button>
 
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button type="button" variant="destructive">
-                    <Trash2 className="mr-2 h-4 w-4" /> Eliminar
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Esta acción no se puede deshacer. Esto eliminará permanentemente el vehículo.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-                      Eliminar
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <DeleteWithModal onDelete={handleDelete}></DeleteWithModal>
             </>
           )}
         </div>

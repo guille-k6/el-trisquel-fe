@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, Save } from "lucide-react"
@@ -69,7 +69,6 @@ export default function NewVehicle() {
       </Link>
 
       <h1 className="text-2xl font-bold mb-6">Nuevo Vehículo</h1>
-      <h2>{JSON.stringify(formData)}</h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
