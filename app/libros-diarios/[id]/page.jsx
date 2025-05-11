@@ -19,6 +19,7 @@ import { useToast } from "@/components/ui/toast"
 import { Card, CardContent } from "@/components/ui/card"
 import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
 import { fetchVouchers } from "@/lib/voucher/api"
+import { getTodayDateForInput } from "@/lib/utils"
 
 export default function LibroDiarioDetail({ params }) {
   const { toast } = useToast()
@@ -175,10 +176,6 @@ export default function LibroDiarioDetail({ params }) {
           observations: item.observations
         })),
       }
-      console.log("voy a mandar a actualizar el updatedLibroDiario:");
-      console.log(updatedLibroDiario);
-      
-      
       await postNewDailyBook(updatedLibroDiario)
       setIsEditing(false)
       toast({
@@ -526,7 +523,7 @@ export default function LibroDiarioDetail({ params }) {
                         <FormDatePicker
                           id={`item-date-${index}`}
                           readOnly={!isEditing}
-                          value={item.date}
+                          value={item.date || getTodayDateForInput()}
                           onChange={(e) => handleItemChange(index, "date", e.target.value)}
                           required
                         />
