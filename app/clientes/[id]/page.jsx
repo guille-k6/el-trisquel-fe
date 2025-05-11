@@ -21,7 +21,11 @@ export default function ClientDetail({ params }) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
-  const [formData, setFormData] = useState({})
+  const [formData, setFormData] = useState({
+    name: "",
+    address: "",
+    phoneNumber: "",
+  })
   const [formDataCopy, setFormDataCopy] = useState({})
   const [foundClient, setFoundClient] = useState(true)
 

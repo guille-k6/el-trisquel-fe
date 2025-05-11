@@ -21,7 +21,9 @@ export default function ProductDetail({ params }) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
-  const [formData, setFormData] = useState({})
+  const [formData, setFormData] = useState({
+    name: '',
+  })
   const [formDataCopy, setFormDataCopy] = useState({})
   const [foundProduct, setFoundProduct] = useState(true)
 

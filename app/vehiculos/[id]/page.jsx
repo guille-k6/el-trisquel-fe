@@ -24,7 +24,11 @@ export default function VehicleDetail({ params }) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
-  const [formData, setFormData] = useState({})
+  const [formData, setFormData] = useState({
+    name: "",
+    purchaseDate: "",
+    purchaseDatePrice: '',
+  })
   const [formDataCopy, setFormDataCopy] = useState({})
   const [foundVehicle, setFoundVehicle] = useState(true)
   
