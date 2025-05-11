@@ -23,6 +23,7 @@ export default function ClientDetail({ params }) {
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({})
   const [formDataCopy, setFormDataCopy] = useState({})
+  const [foundClient, setFoundClient] = useState(true)
 
   useEffect(() => {
     getClient()
@@ -36,7 +37,9 @@ export default function ClientDetail({ params }) {
         address: data.address,
         phoneNumber: data.phoneNumber,
       })
+      
     } catch (error) {
+      setFoundClient(false)
       toast({
         title: "Error",
         description: error.data,
@@ -138,7 +141,7 @@ export default function ClientDetail({ params }) {
     )
   }
 
-  if (!formData.name) {
+  if (!foundClient) {
     return (
       <div className="min-h-screen p-4">
         <Link href="/clientes" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">

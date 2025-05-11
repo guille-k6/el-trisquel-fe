@@ -26,6 +26,7 @@ export default function VehicleDetail({ params }) {
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({})
   const [formDataCopy, setFormDataCopy] = useState({})
+  const [foundVehicle, setFoundVehicle] = useState(true)
   
   useEffect(() => {
     getVehicle()
@@ -92,6 +93,7 @@ export default function VehicleDetail({ params }) {
         duration: 7000,
       })
     } catch (error) {
+      setFoundVehicle(false)
       toast({
         title: "Error",
         description: error.data,
@@ -127,7 +129,7 @@ export default function VehicleDetail({ params }) {
     });
   };
 
-  if (loading) {
+  if (!foundVehicle) {
     return (
       <div className="min-h-screen p-4 flex justify-center items-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>

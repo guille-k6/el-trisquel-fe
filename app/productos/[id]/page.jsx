@@ -23,6 +23,7 @@ export default function ProductDetail({ params }) {
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({})
   const [formDataCopy, setFormDataCopy] = useState({})
+  const [foundProduct, setFoundProduct] = useState(true)
 
   useEffect(() => {
     getProduct()
@@ -35,6 +36,7 @@ export default function ProductDetail({ params }) {
         name: data.name,
       })
     } catch (error) {
+      setFoundProduct(false)
       toast({
         title: "Error",
         description: error.data,
@@ -134,7 +136,7 @@ export default function ProductDetail({ params }) {
     )
   }
 
-  if (!formData.id) {
+  if (!foundProduct) {
     return (
       <div className="min-h-screen p-4">
         <Link href="/productos" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">

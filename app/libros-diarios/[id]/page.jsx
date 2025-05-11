@@ -14,7 +14,6 @@ import { DeleteWithModal } from "@/components/ui/delete-with-modal"
 import { FormNumberInput } from "@/components/ui/inputs/form-number-input"
 import { FormDatePicker } from "@/components/ui/inputs/form-date-picker"
 import { FormTextInput } from "@/components/ui/inputs/form-text-input"
-import { FormCheckInput } from "@/components/ui/inputs/form-check"
 import { useToast } from "@/components/ui/toast"
 import { Card, CardContent } from "@/components/ui/card"
 import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
@@ -50,6 +49,7 @@ export default function LibroDiarioDetail({ params }) {
   const [products, setProducts] = useState([])
   const [clients, setClients] = useState([])
   const [vouchers, setVouchers] = useState([])
+  const [foundDailyBook, setFoundDailyBook] = useState(true)
 
   const nitrogenProviders = [{ id: "Air Liquide", name: "Air Liquide" }, { id: "Linde", name: "Linde" }];
 
@@ -90,6 +90,7 @@ export default function LibroDiarioDetail({ params }) {
       setClients(clientsData)
       setVouchers(vouchersData)
     } catch (error) {
+      setFoundDailyBook(false)
       toast({
         title: "Error",
         description: error.message || "Error al cargar los datos",
@@ -241,7 +242,7 @@ export default function LibroDiarioDetail({ params }) {
     )
   }
 
-  if (!formData.id) {
+  if (!foundDailyBook) {
     return (
       <div className="min-h-screen p-4">
         <Link href="/libros-diarios" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
