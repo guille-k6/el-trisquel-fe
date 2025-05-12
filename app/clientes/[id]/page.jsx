@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, use } from "react"
+import { useState, useEffect, use } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { fetchClientById } from "@/lib/customer/api"
@@ -91,6 +91,8 @@ export default function ClientDetail({ params }) {
 
   const handleDelete = async (e) => {
     e.preventDefault()
+    console.log("entrando al delete");
+    
     try {
       await deleteClient(id)
       router.push("/clientes")

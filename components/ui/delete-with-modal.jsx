@@ -12,7 +12,7 @@ import {
 import { Trash2} from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-function DeleteWithModal({ handleDelete }) {
+function DeleteWithModal({ onDelete }) {
     return (
       <AlertDialog>
         <AlertDialogTrigger asChild>
@@ -24,12 +24,12 @@ function DeleteWithModal({ handleDelete }) {
           <AlertDialogHeader>
             <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. Esto eliminará permanentemente el remito.
+              Esta acción no se puede deshacer. Esto eliminará permanentemente el elemento.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+            <AlertDialogAction onClick={onDelete} className="bg-red-600 hover:bg-red-700">
               Eliminar
             </AlertDialogAction>
           </AlertDialogFooter>
