@@ -19,6 +19,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
 import { fetchVouchers } from "@/lib/voucher/api"
 import { getTodayDateForInput } from "@/lib/utils"
+import { FormCheckInput } from "@/components/ui/inputs/form-check"
 
 export default function LibroDiarioDetail({ params }) {
   const { toast } = useToast()
@@ -48,7 +49,6 @@ export default function LibroDiarioDetail({ params }) {
   const [vehicles, setVehicles] = useState([])
   const [products, setProducts] = useState([])
   const [clients, setClients] = useState([])
-  const [vouchers, setVouchers] = useState([])
   const [foundDailyBook, setFoundDailyBook] = useState(true)
 
   const nitrogenProviders = [{ id: "Air Liquide", name: "Air Liquide" }, { id: "Linde", name: "Linde" }];
@@ -65,7 +65,6 @@ export default function LibroDiarioDetail({ params }) {
         fetchVehicles(),
         fetchProducts(),
         fetchClients(),
-        fetchVouchers(),
       ])
 
       setFormData({
@@ -114,6 +113,15 @@ export default function LibroDiarioDetail({ params }) {
   const handleItemChange = (index, field, value) => {
     const updatedItems = [...formData.items]
     updatedItems[index][field] = value
+    setFormData({
+      ...formData,
+      items: updatedItems,
+    })
+  }
+
+  const handleItemCheckboxChange = (index, field, e) => {
+    const updatedItems = [...formData.items]
+    updatedItems[index][field] = e.target.checked
     setFormData({
       ...formData,
       items: updatedItems,
@@ -445,6 +453,12 @@ export default function LibroDiarioDetail({ params }) {
             </div>
           ) : (
             <div className="space-y-4">
+                    <div>
+                      <h2 className="text-lg font-semibold mb-4">Selected Vehicles:</h2>
+                      <pre className="bg-gray-100 p-4 rounded mb-6 overflow-auto max-h-60">
+                        {JSON.stringify(formData, null, 2)}
+                      </pre>
+                    </div>
               {formData.items.map((item, index) => (
                 <Card key={index} className="">
                   <CardContent className="p-4">
@@ -506,20 +520,6 @@ export default function LibroDiarioDetail({ params }) {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor={`item-voucher-${index}`}>Remito</Label>
-                        <FormCombo
-                          id={`item-voucher-${index}`}
-                          options={vouchers}
-                          placeholder="Elegir remito..."
-                          onChange={(selectedOption) => handleItemChange(index, "voucher", selectedOption)}
-                          displayKey="name"
-                          valueKey="id"
-                          defaultValue={item.voucher}
-                          readOnly={!isEditing}
-                        />
-                      </div>
-
-                      <div className="space-y-2">
                         <Label htmlFor={`item-date-${index}`}>Fecha</Label>
                         <FormDatePicker
                           id={`item-date-${index}`}
@@ -527,6 +527,23 @@ export default function LibroDiarioDetail({ params }) {
                           value={item.date || getTodayDateForInput()}
                           onChange={(e) => handleItemChange(index, "date", e.target.value)}
                           required
+                        />
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <FormCheckInput id={`item-xvoucher-${index}`} value={item.xVoucher || false} onChange={(e) => handleItemCheckboxChange(index, "xVoucher", e)} disabled={!isEditing}/>
+                        <Label htmlFor={`item-xvoucher-${index}`}>Remito X</Label>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor={`item-voucher-${index}`}>Remito N°</Label>
+                        <FormTextInput
+                          id={`item-voucher-${index}`}
+                          placeholder={"Remito..."}
+                          readOnly={!isEditing}
+                          value={item.voucherNumber || ""}
+                          onChange={(e) => handleItemChange(index, "voucherNumber", e.target.value)}
+                          className="mt-1 w-full"
                         />
                       </div>
 
