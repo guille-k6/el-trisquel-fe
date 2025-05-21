@@ -50,6 +50,7 @@ export default function LibroDiarioDetail({ params }) {
   const [products, setProducts] = useState([])
   const [clients, setClients] = useState([])
   const [foundDailyBook, setFoundDailyBook] = useState(true)
+  const [lastInformedVoucherNumber, setLastInformedVoucherNumber] = useState()
 
   const nitrogenProviders = [{ id: "Air Liquide", name: "Air Liquide" }, { id: "Linde", name: "Linde" }];
 
@@ -60,11 +61,12 @@ export default function LibroDiarioDetail({ params }) {
   const fetchData = async () => {
     try {
       setLoading(true)
-      const [libroDiarioData, vehiclesData, productsData, clientsData, vouchersData] = await Promise.all([
+      const [libroDiarioData, vehiclesData, productsData, clientsData, lastInformedVoucherNumber] = await Promise.all([
         fetchDailyBookById(id),
         fetchVehicles(),
         fetchProducts(),
         fetchClients(),
+        fetchLastInformedVoucherNumber(),
       ])
 
       setFormData({
