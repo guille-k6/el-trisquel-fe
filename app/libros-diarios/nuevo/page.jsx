@@ -17,7 +17,9 @@ import { useToast } from "@/components/ui/toast"
 import { Card, CardContent } from "@/components/ui/card"
 import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
 import { FormTextInput } from "@/components/ui/inputs/form-text-input"
+import { FormCheckInput } from "@/components/ui/inputs/form-check"
 import { getTodayDateForInput } from "@/lib/utils"
+import { fetchLatestVoucherNumber, fetchLatestXVoucher } from "@/lib/daily-book/api"
 
 export default function NewLibroDiario() {
   const { toast } = useToast()
@@ -40,10 +42,11 @@ export default function NewLibroDiario() {
     nitrogenProvider: "",
     items: [],
   })
+  const [latestVoucherNumber, setLastVoucherNumber] = useState() // Fetch once, then I handle myself the increment or decrement
+  const [latestXVoucher, setLatestXVoucher] = useState()
   const [vehicles, setVehicles] = useState([])
   const [products, setProducts] = useState([])
   const [clients, setClients] = useState([])
-  const [vouchers, setVouchers] = useState([])
 
   const nitrogenProviders = [{ id: "Air Liquide", name: "Air Liquide" }, { id: "Linde", name: "Linde" }];
 
@@ -54,17 +57,19 @@ export default function NewLibroDiario() {
   const fetchData = async () => {
     try {
       setLoading(true)
-      const [vehiclesData, productsData, clientsData, vouchersData] = await Promise.all([
+      const [vehiclesData, productsData, clientsData, latestVoucherNumber, latestXVoucher] = await Promise.all([
         fetchVehicles(),
         fetchProducts(),
         fetchClients(),
-        fetchVouchers(),
+        fetchLatestVoucherNumber(),
+        fetchLatestXVoucher()
       ])
 
       setVehicles(vehiclesData)
       setProducts(productsData)
       setClients(clientsData)
-      setVouchers(vouchersData)
+      setLastVoucherNumber(latestVoucherNumber)
+      setLatestXVoucher(latestXVoucher)
     } catch (error) {
       toast({
         title: "Error",
@@ -95,12 +100,42 @@ export default function NewLibroDiario() {
     })
   }
 
+  const handleIsXVoucher = (e, index) => {
+    const updatedItems = [...formData.items]
+    updatedItems[index].isXVoucher = e.target.checked;
+    if(e.target.checked) {
+      updatedItems[index].voucherNumber = null;
+      let newLatestXVoucherNumber = latestXVoucher.split("-")[1];
+      newLatestXVoucherNumber = parseInt(newLatestXVoucherNumber) + 1;
+      newLatestXVoucherNumber = "X-" + newLatestXVoucherNumber;
+      setLatestXVoucher(newLatestXVoucherNumber);
+      updatedItems[index].xVoucher = newLatestXVoucherNumber;
+      setLastVoucherNumber((prev) => prev - 1);
+    } else {
+      updatedItems[index].xVoucher = null;
+      const newLatestVoucherNumber = latestVoucherNumber + 1;
+      setLastVoucherNumber(newLatestVoucherNumber);
+      updatedItems[index].voucherNumber = newLatestVoucherNumber;
+      let lastXVoucherNumber = latestXVoucher.split("-")[1];
+      lastXVoucherNumber = parseInt(lastXVoucherNumber) - 1;
+      setLatestXVoucher("X-" + lastXVoucherNumber);
+    }
+    setFormData({
+      ...formData,
+      items: updatedItems,
+    })
+  }  
+
   const addItem = () => {
+    const newVoucherNumber = latestVoucherNumber + 1;
+    setLastVoucherNumber(newVoucherNumber);
     const newItem = {
       amount: 0,
-      product: null,
-      client: null,
+      product: {},
+      client: {},
       authorized: false,
+      addedLocally: true,
+      voucherNumber: newVoucherNumber
     }
     setFormData({
       ...formData,
@@ -110,6 +145,15 @@ export default function NewLibroDiario() {
 
   const removeItem = (index) => {
     const updatedItems = [...formData.items]
+    if (updatedItems[index].voucherNumber !== null) {
+      // The item has a voucher number, so we decrement the last voucher number
+      setLastVoucherNumber((prev) => prev - 1);
+    } else if (updatedItems[index].xVoucher !== null) {
+      // The item has an X voucher, so we decrement the last X voucher number
+      let lastXVoucherNumber = latestXVoucher.split("-")[1];
+      lastXVoucherNumber = parseInt(lastXVoucherNumber) - 1;
+      setLatestXVoucher("X-" + lastXVoucherNumber); 
+    }
     updatedItems.splice(index, 1)
     setFormData({
       ...formData,
@@ -233,8 +277,8 @@ export default function NewLibroDiario() {
           </div>
         </div>
 
-          <div className="mt-4 mb-4">
-          <h2 className="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Información del Vehículo</h2>
+        <div className="mt-4 mb-4">
+          <h2 className="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Vehículo</h2>
           <div className="py-2 rounded-lg">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div className="space-y-2">
@@ -280,7 +324,7 @@ export default function NewLibroDiario() {
         </div>
 
         <div className="mt-8 mb-4">
-          <h2 className="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Información del Tanque</h2>
+          <h2 className="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Tanque</h2>
           <div className="py-2 rounded-lg">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
               <div className="space-y-2">
@@ -355,11 +399,11 @@ export default function NewLibroDiario() {
         </div>
 
         <div className="mt-8 mb-4">
-          <h2 className="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Información de Termos</h2>
+          <h2 className="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Termos</h2>
           <div className="py-2 rounded-lg">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="ltRemainingFlask">Litros restantes en termos</Label>
+                <Label htmlFor="ltRemainingFlask">Litros restantes</Label>
                 <FormNumberInput
                   id="ltRemainingFlask"
                   readOnly={false}
@@ -370,7 +414,7 @@ export default function NewLibroDiario() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="ltTotalFlask">Litros totales en termos</Label>
+                <Label htmlFor="ltTotalFlask">Litros totales</Label>
                 <FormNumberInput
                   id="ltTotalFlask"
                   readOnly={false}
@@ -397,6 +441,13 @@ export default function NewLibroDiario() {
             </div>
           ) : (
             <div className="space-y-4">
+              <div>
+                <h2 className="text-lg font-semibold mb-4">Selected Vehicles:</h2>
+                <pre className="bg-gray-100 p-4 rounded mb-6 overflow-auto max-h-60">
+                  {JSON.stringify(formData, null, 2)}
+                </pre>
+                <div>{latestVoucherNumber} || {latestXVoucher}</div>
+              </div>
               {formData.items.map((item, index) => (
                 <Card key={index} className="">
                   <CardContent className="p-4">
@@ -456,20 +507,6 @@ export default function NewLibroDiario() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor={`item-voucher-${index}`}>Remito</Label>
-                        <FormCombo
-                          id={`item-voucher-${index}`}
-                          options={vouchers}
-                          placeholder="Elegir remito..."
-                          onChange={(selectedOption) => handleItemChange(index, "voucher", selectedOption)}
-                          displayKey="name"
-                          valueKey="id"
-                          defaultValue={item.voucher}
-                          readOnly={false}
-                        />
-                      </div>
-
-                      <div className="space-y-2">
                         <Label htmlFor={`item-date-${index}`}>Fecha</Label>
                         <FormDatePicker
                           id={`item-date-${index}`}
@@ -479,6 +516,36 @@ export default function NewLibroDiario() {
                           required
                         />
                       </div>
+
+                      <div className="flex items-center space-x-2">
+                        <FormCheckInput id={`item-xvoucher-${index}`} value={item.isXVoucher ?? false} onChange={(e) => handleIsXVoucher(e, index)} disabled={false}/>
+                        <Label htmlFor={`item-xvoucher-${index}`}>Remito X</Label>
+                      </div>
+
+                      {item.isXVoucher ? (
+                        <div className="space-y-2">
+                          <Label htmlFor={`item-xvoucher-${index}`}>Remito X°</Label>
+                          <FormTextInput
+                            id={`item-xvoucher-${index}`}
+                            placeholder="Ingrese Remito X..."
+                            readOnly={false}
+                            value={item.xVoucher || ""}
+                            onChange={(e) => handleItemChange(index, "xVoucher", e.target.value)}
+                            className="mt-1 w-full"
+                          />
+                        </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <Label htmlFor={`item-voucher-${index}`}>Remito N°</Label>
+                        <FormNumberInput
+                          id={`item-voucher-${index}`}
+                          readOnly={false}
+                          value={item.voucherNumber || ""}
+                          onChange={(e) => handleItemChange(index, "voucherNumber", e.target.value)}
+                          className="mt-1 w-full"
+                        />
+                      </div>
+                    )}
 
                       <div className="space-y-2">
                         <Label htmlFor={`item-payment-${index}`}>Pago</Label>
