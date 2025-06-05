@@ -209,17 +209,25 @@ export default function NewLibroDiario() {
         vehicleKmsAfter: Number(formData.vehicleKmsAfter),
         kgTankBefore: Number(formData.kgTankBefore),
         kgTankAfter: Number(formData.kgTankAfter),
+        pressureTankBefore: Number(formData.pressureTankBefore),
+        pressureTankAfter: Number(formData.pressureTankAfter),
         ltExtractedTank: Number(formData.ltExtractedTank),
         ltRemainingFlask: Number(formData.ltRemainingFlask),
         ltTotalFlask: Number(formData.ltTotalFlask),
+        nitrogenProvider: formData.nitrogenProvider,
         items: formData.items.map((item) => ({
+          id: item.id,
           amount: Number(item.amount),
           product: { id: item.product.id },
           client: { id: item.client.id },
           authorized: item.authorized,
+          voucherNumber: item.voucherNumber,
+          xVoucher: item.xVoucher,
+          date: item.date || getTodayDateForInput(),
+          payment: Number(item.payment),
+          observations: item.observations
         })),
       }
-
       const response = await postNewDailyBook(newLibroDiario)
 
       toast({
@@ -306,6 +314,7 @@ export default function NewLibroDiario() {
                   value={formData.vehicleKmsBefore}
                   onChange={(e) => handleChange("vehicleKmsBefore", e.target.value)}
                   required
+                  min="0" max="9999999"
                 />
               </div>
 
@@ -317,6 +326,7 @@ export default function NewLibroDiario() {
                   value={formData.vehicleKmsAfter}
                   onChange={(e) => handleChange("vehicleKmsAfter", e.target.value)}
                   required
+                  min="0" max="9999999"
                 />
               </div>
             </div>
@@ -348,6 +358,7 @@ export default function NewLibroDiario() {
                   value={formData.kgTankBefore}
                   onChange={(e) => handleChange("kgTankBefore", e.target.value)}
                   required
+                  min="0" max="9999999"
                 />
               </div>
 
@@ -359,6 +370,7 @@ export default function NewLibroDiario() {
                   value={formData.kgTankAfter}
                   onChange={(e) => handleChange("kgTankAfter", e.target.value)}
                   required
+                  min="0" max="9999999"
                 />
               </div>
 
@@ -370,6 +382,7 @@ export default function NewLibroDiario() {
                   value={formData.ltExtractedTank}
                   onChange={(e) => handleChange("ltExtractedTank", e.target.value)}
                   required
+                  min="0" max="9999999"
                 />
               </div>
 
@@ -381,6 +394,7 @@ export default function NewLibroDiario() {
                   value={formData.pressureTankBefore}
                   onChange={(e) => handleChange("pressureTankBefore", e.target.value)}
                   required
+                  min="0" max="9999999"
                 />
               </div>
 
@@ -392,6 +406,7 @@ export default function NewLibroDiario() {
                   value={formData.pressureTankAfter}
                   onChange={(e) => handleChange("pressureTankAfter", e.target.value)}
                   required
+                  min="0" max="9999999"
                 />
               </div>
             </div>
@@ -410,6 +425,7 @@ export default function NewLibroDiario() {
                   value={formData.ltRemainingFlask}
                   onChange={(e) => handleChange("ltRemainingFlask", e.target.value)}
                   required
+                  min="0" max="9999999"
                 />
               </div>
 
@@ -421,6 +437,7 @@ export default function NewLibroDiario() {
                   value={formData.ltTotalFlask}
                   onChange={(e) => handleChange("ltTotalFlask", e.target.value)}
                   required
+                  min="0" max="9999999"
                 />
               </div>
             </div>
@@ -441,13 +458,13 @@ export default function NewLibroDiario() {
             </div>
           ) : (
             <div className="space-y-4">
-              <div>
+              {/* <div>
                 <h2 className="text-lg font-semibold mb-4">Selected Vehicles:</h2>
                 <pre className="bg-gray-100 p-4 rounded mb-6 overflow-auto max-h-60">
                   {JSON.stringify(formData, null, 2)}
                 </pre>
                 <div>{latestVoucherNumber} || {latestXVoucher}</div>
-              </div>
+              </div> */}
               {formData.items.map((item, index) => (
                 <Card key={index} className="">
                   <CardContent className="p-4">
@@ -503,6 +520,7 @@ export default function NewLibroDiario() {
                           value={item.amount}
                           onChange={(e) => handleItemChange(index, "amount", e.target.value)}
                           required
+                          min="0" max="9999999"
                         />
                       </div>
 
@@ -554,6 +572,8 @@ export default function NewLibroDiario() {
                           readOnly={false}
                           value={item.payment || 0}
                           onChange={(e) => handleItemChange(index, "payment", e.target.value)}
+                          min="0"
+                          max="9999999"
                         />
                       </div>
 

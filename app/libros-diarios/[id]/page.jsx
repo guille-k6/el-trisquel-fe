@@ -227,12 +227,14 @@ export default function LibroDiarioDetail({ params }) {
           product: { id: item.product.id },
           client: { id: item.client.id },
           authorized: item.authorized,
-          voucher: item.voucher,
+          voucherNumber: item.voucherNumber,
+          xVoucher: item.xVoucher,
           date: item.date,
           payment: Number(item.payment),
           observations: item.observations
         })),
       }
+  
       await postNewDailyBook(updatedLibroDiario)
       setIsEditing(false)
       toast({
@@ -372,6 +374,7 @@ export default function LibroDiarioDetail({ params }) {
                   value={formData.vehicleKmsBefore}
                   onChange={(e) => handleChange("vehicleKmsBefore", e.target.value)}
                   required
+                  min="0" max="9999999"
                 />
               </div>
 
@@ -383,6 +386,7 @@ export default function LibroDiarioDetail({ params }) {
                   value={formData.vehicleKmsAfter}
                   onChange={(e) => handleChange("vehicleKmsAfter", e.target.value)}
                   required
+                  min="0" max="9999999"
                 />
               </div>
             </div>
@@ -414,6 +418,7 @@ export default function LibroDiarioDetail({ params }) {
                   value={formData.kgTankBefore}
                   onChange={(e) => handleChange("kgTankBefore", e.target.value)}
                   required
+                  min="0" max="9999999"
                 />
               </div>
 
@@ -425,6 +430,7 @@ export default function LibroDiarioDetail({ params }) {
                   value={formData.kgTankAfter}
                   onChange={(e) => handleChange("kgTankAfter", e.target.value)}
                   required
+                  min="0" max="9999999"
                 />
               </div>
 
@@ -436,6 +442,7 @@ export default function LibroDiarioDetail({ params }) {
                   value={formData.ltExtractedTank}
                   onChange={(e) => handleChange("ltExtractedTank", e.target.value)}
                   required
+                  min="0" max="9999999"
                 />
               </div>
 
@@ -447,6 +454,7 @@ export default function LibroDiarioDetail({ params }) {
                   value={formData.pressureTankBefore}
                   onChange={(e) => handleChange("pressureTankBefore", e.target.value)}
                   required
+                  min="0" max="9999999"
                 />
               </div>
 
@@ -458,6 +466,7 @@ export default function LibroDiarioDetail({ params }) {
                   value={formData.pressureTankAfter}
                   onChange={(e) => handleChange("pressureTankAfter", e.target.value)}
                   required
+                  min="0" max="9999999"
                 />
               </div>
             </div>
@@ -476,6 +485,7 @@ export default function LibroDiarioDetail({ params }) {
                   value={formData.ltRemainingFlask}
                   onChange={(e) => handleChange("ltRemainingFlask", e.target.value)}
                   required
+                  min="0" max="9999999"
                 />
               </div>
 
@@ -487,6 +497,7 @@ export default function LibroDiarioDetail({ params }) {
                   value={formData.ltTotalFlask}
                   onChange={(e) => handleChange("ltTotalFlask", e.target.value)}
                   required
+                  min="0" max="9999999"
                 />
               </div>
             </div>
@@ -573,6 +584,7 @@ export default function LibroDiarioDetail({ params }) {
                           value={item.amount}
                           onChange={(e) => handleItemChange(index, "amount", e.target.value)}
                           required
+                          min="0" max="9999999"
                         />
                       </div>
 
@@ -624,6 +636,7 @@ export default function LibroDiarioDetail({ params }) {
                           readOnly={!isEditing}
                           value={item.payment || 0}
                           onChange={(e) => handleItemChange(index, "payment", e.target.value)}
+                          min="0" max="9999999"
                         />
                       </div>
 
