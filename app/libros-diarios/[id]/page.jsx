@@ -243,6 +243,13 @@ export default function LibroDiarioDetail({ params }) {
         type: "success",
         duration: 7000,
       })
+      // Update latest voucher numbers
+      const [latestVoucherNumber, latestXVoucher] = await Promise.all([
+        fetchLatestVoucherNumber(),
+        fetchLatestXVoucher()
+      ])
+      setLastVoucherNumber(latestVoucherNumber)
+      setLatestXVoucher(latestXVoucher)
     } catch (error) {
       toast({
         title: "Error",

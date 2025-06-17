@@ -64,6 +64,17 @@ export default function Home() {
           <h2 className="mb-2 text-xl font-semibold">Libros Diarios</h2>
           <p className="text-center text-sm text-gray-600">Consulte y gestione los registros contables diarios</p>
         </Link>
+
+        <Link
+          href="/facturacionc"
+          className="flex flex-col items-center rounded-lg border bg-white p-6 shadow-sm transition-all hover:shadow-md"
+        >
+          <div className="mb-4 rounded-full bg-purple-100 p-3">
+            <BookOpen className="h-8 w-8 text-purple-600" />
+          </div>
+          <h2 className="mb-2 text-xl font-semibold">Facturacion</h2>
+          <p className="text-center text-sm text-gray-600">Comenzá a facturar</p>
+        </Link>
       </div>
     </main>
   )
