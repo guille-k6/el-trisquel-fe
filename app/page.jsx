@@ -66,7 +66,7 @@ export default function Home() {
         </Link>
 
         <Link
-          href="/facturacionc"
+          href="/facturacion"
           className="flex flex-col items-center rounded-lg border bg-white p-6 shadow-sm transition-all hover:shadow-md"
         >
           <div className="mb-4 rounded-full bg-purple-100 p-3">

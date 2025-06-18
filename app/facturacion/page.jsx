@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { ArrowLeft, FileText, AlertTriangle, Search, X} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -17,6 +18,7 @@ import { formatDateToString, formatPrice } from "@/lib/utils"
 import Pagination from "@/components/ui/pagination"
 
 export default function Facturacion() {
+  const router = useRouter()
   const { toast } = useToast()
   const [loading, setLoading] = useState(true)
   const [dailyBookItems, setDailyBookItems] = useState([])
@@ -167,8 +169,8 @@ export default function Facturacion() {
       })
       return
     }
-    // TODO: Confirmar factura y poner precio
-    const result = await generateInvoice(selectedClientId, selectedItems)
+    const queryString = selectedItems.join(",");
+    router.push(`/facturacion/confirmar?items=${queryString}`);
   }
 
   const getSelectedClientFromFilters = () => {
@@ -266,6 +268,13 @@ export default function Facturacion() {
         </pre>
       </div>
 
+      <div>
+        <h2 className="text-lg font-semibold mb-4">filters:</h2>
+        <pre className="bg-gray-100 p-4 rounded mb-6 overflow-auto max-h-60">
+          {JSON.stringify(selectedItems, null, 2)}
+        </pre>
+      </div>
+
       {selectedItems.length > 0 && (
         <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -275,18 +284,9 @@ export default function Facturacion() {
               </p>
               <p className="text-lg font-bold text-green-700">Total: {formatPrice(getTotalAmount())}</p>
             </div>
-            <Button onClick={handleGenerateInvoice} disabled={generating} className="bg-green-600 hover:bg-green-700">
-              {generating ? (
-                <>
-                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"></div>
-                  Generando...
-                </>
-              ) : (
-                <>
-                  <FileText className="mr-2 h-4 w-4" />
-                  Generar Factura
-                </>
-              )}
+            <Button onClick={handleGenerateInvoice} className="bg-green-600 hover:bg-green-700">
+              <FileText className="mr-2 h-4 w-4" />
+              Generar Factura
             </Button>
           </div>
         </div>

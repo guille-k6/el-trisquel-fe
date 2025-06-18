@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, Calculator, FileText, History, DollarSign, AlertTriangle, Check } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -12,41 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-
-// Mock data - replace with actual API calls
-const mockItems = [
-  {
-    id: 1,
-    date: "2024-01-15",
-    product: { name: "Gasoil" },
-    amount: 150,
-    voucherNumber: "001234",
-    observations: "Entrega matutina",
-  },
-  {
-    id: 2,
-    date: "2024-01-16",
-    product: { name: "Nafta Super" },
-    amount: 200,
-    voucherNumber: "001235",
-    observations: null,
-  },
-  {
-    id: 3,
-    date: "2024-01-17",
-    product: { name: "Gasoil" },
-    amount: 300,
-    voucherNumber: "001236",
-    observations: "Entrega urgente",
-  },
-]
-
-const mockClient = {
-  id: 1,
-  name: "Transportes San Martín S.A.",
-  cuit: "30-12345678-9",
-  address: "Av. Libertador 1234, Buenos Aires",
-}
+import { fetchDailyBookItemsInIds } from "@/lib/daily-book/api"
 
 const mockPriceHistory = [
   { date: "2024-01-10", pricePerLiter: 850.5, totalAmount: 127575.0, itemsCount: 3 },
@@ -68,36 +33,10 @@ export default function BillingConfirmationPage() {
   const [showHistory, setShowHistory] = useState(false)
 
   // Get item IDs from URL
-  const itemIds =
-    searchParams
-      .get("items")
-      ?.split(",")
-      .map((id) => Number.parseInt(id)) || []
+  const itemIds = searchParams.get("items")?.split(",").map((id) => Number.parseInt(id)) || []
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true)
-      try {
-        // Simulate API calls
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-
-        // Filter items by IDs from URL
-        const selectedItems = mockItems.filter((item) => itemIds.includes(item.id))
-        setItems(selectedItems)
-        setClient(mockClient)
-        setPriceHistory(mockPriceHistory)
-
-        // Set last used price as default
-        if (mockPriceHistory.length > 0) {
-          setPricePerLiter(mockPriceHistory[0].pricePerLiter.toString())
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
+    setLoading(true)
     if (itemIds.length > 0) {
       fetchData()
     } else {
@@ -105,20 +44,22 @@ export default function BillingConfirmationPage() {
     }
   }, [])
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat("es-AR", {
-      style: "currency",
-      currency: "ARS",
-      minimumFractionDigits: 2,
-    }).format(price)
-  }
+  const fetchData = async () => {
+    try {
+      const selectedItems = await fetchDailyBookItemsInIds(searchParams.get("items"))
+      setItems(selectedItems)
+      setClient(mockClient)
+      setPriceHistory(mockPriceHistory)
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("es-AR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    })
+      // Set last used price as default
+      if (mockPriceHistory.length > 0) {
+        setPricePerLiter(mockPriceHistory[0].pricePerLiter.toString())
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const getTotalLiters = () => {
