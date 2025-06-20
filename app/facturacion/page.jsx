@@ -254,7 +254,7 @@ export default function Facturacion() {
         </CardContent>
       </Card>
 
-      <div>
+      {/* <div>
         <h2 className="text-lg font-semibold mb-4">dbis:</h2>
         <pre className="bg-gray-100 p-4 rounded mb-6 overflow-auto max-h-60">
           {JSON.stringify(dailyBookItems, null, 2)}
@@ -273,7 +273,7 @@ export default function Facturacion() {
         <pre className="bg-gray-100 p-4 rounded mb-6 overflow-auto max-h-60">
           {JSON.stringify(selectedItems, null, 2)}
         </pre>
-      </div>
+      </div> */}
 
       {selectedItems.length > 0 && (
         <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">

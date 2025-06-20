@@ -3,15 +3,16 @@
 import { useState, useEffect } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Calculator, FileText, History, DollarSign, AlertTriangle, Check } from "lucide-react"
+import { ArrowLeft, Calculator, FileText, History, DollarSign, AlertTriangle, Check, Plus, Minus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { fetchDailyBookItemsInIds } from "@/lib/daily-book/api"
+import { useToast } from "@/components/ui/toast"
+import { FormNumberInput } from "@/components/ui/inputs/form-number-input"
+import { FormTextInput } from "@/components/ui/inputs/form-text-input"
 
 const mockPriceHistory = [
   { date: "2024-01-10", pricePerLiter: 850.5, totalAmount: 127575.0, itemsCount: 3 },
@@ -21,16 +22,26 @@ const mockPriceHistory = [
   { date: "2023-12-15", pricePerLiter: 830.0, totalAmount: 99600.0, itemsCount: 2 },
 ]
 
+const formatPrice = (price) => {
+  return new Intl.NumberFormat("es-AR", {
+    style: "currency",
+    currency: "ARS",
+    minimumFractionDigits: 2,
+  }).format(price)
+}
+
 export default function BillingConfirmationPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const { toast } = useToast()
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
-  const [pricePerLiter, setPricePerLiter] = useState("")
   const [items, setItems] = useState([])
   const [client, setClient] = useState(null)
   const [priceHistory, setPriceHistory] = useState([])
   const [showHistory, setShowHistory] = useState(false)
+  const [productPricing, setProductPricing] = useState({})
+  const [globalIVA, setGlobalIVA] = useState(21)
 
   // Get item IDs from URL
   const itemIds = searchParams.get("items")?.split(",").map((id) => Number.parseInt(id)) || []
@@ -40,64 +51,120 @@ export default function BillingConfirmationPage() {
     if (itemIds.length > 0) {
       fetchData()
     } else {
-      setLoading(false)
+      toast({title: "Error", description: "No se encontraron items para facturar", type: "error", duration: 8000,})
     }
   }, [])
 
   const fetchData = async () => {
     try {
-      const selectedItems = await fetchDailyBookItemsInIds(searchParams.get("items"))
-      setItems(selectedItems)
-      setClient(mockClient)
+      const searchedItems = await fetchDailyBookItemsInIds(searchParams.get("items"))
+      setItems(searchedItems)
+      setClient(searchedItems[0].client)
       setPriceHistory(mockPriceHistory)
 
-      // Set last used price as default
-      if (mockPriceHistory.length > 0) {
-        setPricePerLiter(mockPriceHistory[0].pricePerLiter.toString())
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error)
-    } finally {
+      // Inicializar configuración de precios por producto
+      initializeProductPricing(searchedItems)
+
       setLoading(false)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.data,
+        type: "error",
+        duration: 8000,
+      })
     }
   }
 
-  const getTotalLiters = () => {
-    return items.reduce((total, item) => total + item.amount, 0)
+  const initializeProductPricing = (items) => {
+    const groupedProducts = {}
+
+    items.forEach((item) => {
+      const productId = item.product.id
+      const productName = item.product.name
+
+      if (!groupedProducts[productId]) {
+        groupedProducts[productId] = {
+          id: productId,
+          name: productName,
+          totalQuantity: 0,
+          unitPrice: mockPriceHistory.length > 0 ? mockPriceHistory[0].pricePerLiter : 0,
+          ivaPercentage: 21,
+        }
+      }
+
+      groupedProducts[productId].totalQuantity += item.amount
+    })
+
+    setProductPricing(groupedProducts)
+  }
+
+  const updateProductPricing = (productId, field, value) => {
+    setProductPricing((prev) => ({
+      ...prev,
+      [productId]: {
+        ...prev[productId],
+        [field]:
+          field === "totalQuantity" || field === "unitPrice" || field === "ivaPercentage"
+            ? Number.parseFloat(value) || 0
+            : value,
+      },
+    }))
+  }
+
+  const calculateSubtotal = (productId) => {
+    const product = productPricing[productId]
+    if (!product) return 0
+    return product.totalQuantity * product.unitPrice
+  }
+
+  const calculateSubtotalWithIVA = (productId) => {
+    const subtotal = calculateSubtotal(productId)
+    const product = productPricing[productId]
+    if (!product) return 0
+    return subtotal + (subtotal * product.ivaPercentage) / 100
   }
 
   const getTotalAmount = () => {
-    const price = Number.parseFloat(pricePerLiter) || 0
-    return getTotalLiters() * price
+    return Object.keys(productPricing).reduce((total, productId) => {
+      return total + calculateSubtotalWithIVA(productId)
+    }, 0)
+  }
+
+  const getTotalQuantity = () => {
+    return Object.values(productPricing).reduce((total, product) => {
+      return total + product.totalQuantity
+    }, 0)
+  }
+
+  const applyGlobalIVA = () => {
+    const updatedPricing = { ...productPricing }
+    Object.keys(updatedPricing).forEach((productId) => {
+      updatedPricing[productId].ivaPercentage = globalIVA
+    })
+    setProductPricing(updatedPricing)
+  }
+
+  const applyHistoricalPrice = (price) => {
+    const updatedPricing = { ...productPricing }
+    Object.keys(updatedPricing).forEach((productId) => {
+      updatedPricing[productId].unitPrice = price
+    })
+    setProductPricing(updatedPricing)
   }
 
   const handleGenerateInvoice = async () => {
-    if (!pricePerLiter || Number.parseFloat(pricePerLiter) <= 0) {
-      alert("Por favor ingresa un precio por litro válido")
+    const hasValidPricing = Object.values(productPricing).every(
+      (product) => product.unitPrice > 0 && product.totalQuantity > 0,
+    )
+
+    if (!hasValidPricing) {
+      alert("Por favor completa todos los precios y cantidades")
       return
     }
 
-    setGenerating(true)
-    try {
-      // Simulate invoice generation
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-
-      // Here you would make the actual API call to generate the invoice
-      console.log("Generating invoice with:", {
-        items: items.map((item) => item.id),
-        clientId: client.id,
-        pricePerLiter: Number.parseFloat(pricePerLiter),
-        totalAmount: getTotalAmount(),
-      })
-
-      // Redirect to success page or invoice view
-      router.push("/facturacion/exito")
-    } catch (error) {
-      console.error("Error generating invoice:", error)
-      alert("Error al generar la factura. Por favor intenta nuevamente.")
-    } finally {
-      setGenerating(false)
-    }
+    // Aquí iría la lógica para generar la factura
+    console.log("Generating invoice with:", productPricing)
   }
 
   if (loading) {
@@ -154,8 +221,8 @@ export default function BillingConfirmationPage() {
               <p className="font-medium text-lg">{client.name}</p>
             </div>
             <div>
-              <Label className="text-xs text-gray-500 uppercase tracking-wide">CUIT</Label>
-              <p className="font-medium">{client.cuit}</p>
+              <Label className="text-xs text-gray-500 uppercase tracking-wide">Telefono</Label>
+              <p className="font-medium">{client.phoneNumber}</p>
             </div>
             <div className="sm:col-span-2">
               <Label className="text-xs text-gray-500 uppercase tracking-wide">Dirección</Label>
@@ -170,17 +237,17 @@ export default function BillingConfirmationPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calculator className="h-5 w-5" />
-            Items a Facturar
+            Elementos a facturar
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {items.map((item) => (
-              <div key={item.id} className="border rounded-lg p-4 bg-gray-50">
+            {items.map((item, index) => (
+              <div key={item.id} className="">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div>
                     <Label className="text-xs text-gray-500 uppercase tracking-wide">Fecha</Label>
-                    <p className="font-medium">{formatDate(item.date)}</p>
+                    <p className="font-medium">{item.date}</p>
                   </div>
                   <div>
                     <Label className="text-xs text-gray-500 uppercase tracking-wide">Producto</Label>
@@ -192,54 +259,60 @@ export default function BillingConfirmationPage() {
                   </div>
                   <div>
                     <Label className="text-xs text-gray-500 uppercase tracking-wide">Remito</Label>
-                    <p className="text-sm">N° {item.voucherNumber}</p>
+                    <p className="text-sm">
+                      {item.voucherNumber ? `N° ${item.voucherNumber}` : item.xVoucher || "Sin remito"}
+                    </p>
                   </div>
+                  {item.observations && (
+                    <div>
+                      <Label className="text-xs text-gray-500 uppercase tracking-wide">Observaciones</Label>
+                      <p className="text-sm text-gray-600">{item.observations}</p>
+                    </div>
+                  )}
+                  {Number(item.payment) > 0 && (
+                    <div>
+                      <Label className="text-xs text-gray-500 uppercase tracking-wide">Pago</Label>
+                      <p className="font-medium text-green-600">{item.payment}</p>
+                    </div>
+                  )}
                 </div>
-                {item.observations && (
-                  <div className="mt-3">
-                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Observaciones</Label>
-                    <p className="text-sm text-gray-600">{item.observations}</p>
-                  </div>
-                )}
+                {index < items.length - 1 && <div className="border-b border-gray-200 mt-5 mb-5" />}
               </div>
             ))}
-          </div>
-
-          <Separator className="my-4" />
-
-          <div className="flex justify-between items-center">
-            <span className="text-lg font-semibold">Total Litros:</span>
-            <span className="text-xl font-bold text-blue-600">{getTotalLiters()} L</span>
           </div>
         </CardContent>
       </Card>
 
-      {/* Price Configuration */}
+      {/* Price Configuration*/}
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
-            Configuración de Precio
+            Precios
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="pricePerLiter">Precio por Litro</Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
-                <Input
-                  id="pricePerLiter"
-                  type="number"
-                  step="0.01"
-                  value={pricePerLiter}
-                  onChange={(e) => setPricePerLiter(e.target.value)}
-                  className="pl-8 text-lg font-medium"
-                  placeholder="0.00"
-                />
+          <div className="space-y-6">
+            {/* Global IVA Configuration */}
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <div className="flex-1">
+                <Label htmlFor="globalIVA" className="text-sm font-medium">IVA Global (%)</Label>
+                  <FormNumberInput
+                    id="globalIVA"
+                    readOnly={false}
+                    value={globalIVA}
+                    onChange={(e) => setGlobalIVA(Number.parseFloat(e.target.value) || 0)}
+                    min="0" max="9999999"
+                    step="0.5"
+                    className={"bg-white mt-1 w-full sm:w-32"}
+                  />
+                </div>
+                <Button variant="outline" size="sm" onClick={applyGlobalIVA} className="self-end w-full sm:w-32">Aplicar a todos</Button>
               </div>
             </div>
 
+            {/* Historical Prices */}
             {priceHistory.length > 0 && (
               <div>
                 <Button variant="outline" size="sm" onClick={() => setShowHistory(!showHistory)} className="mb-3">
@@ -256,7 +329,7 @@ export default function BillingConfirmationPage() {
                           className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 bg-white rounded border"
                         >
                           <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                            <span className="text-sm text-gray-500">{formatDate(record.date)}</span>
+                            <span className="text-sm text-gray-500">{record.date}</span>
                             <Badge variant="outline" className="text-xs w-fit">
                               {record.itemsCount} items
                             </Badge>
@@ -266,10 +339,10 @@ export default function BillingConfirmationPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => setPricePerLiter(record.pricePerLiter.toString())}
+                              onClick={() => applyHistoricalPrice(record.pricePerLiter)}
                               className="text-blue-600 hover:text-blue-800 p-1 h-auto"
                             >
-                              Usar precio
+                              Aplicar a todos
                             </Button>
                           </div>
                         </div>
@@ -279,44 +352,114 @@ export default function BillingConfirmationPage() {
                 )}
               </div>
             )}
+
+            {/* Product pricing*/}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Configuración por Producto</h3>
+
+              {Object.values(productPricing).map((product) => (
+                <Card key={product.id} className="border-l-4 border-l-blue-500">
+                  <CardContent className="pt-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-6 sm:grid-cols-3 gap-4 items-end">
+                      <div className="lg:col-span-1">
+                        <Label className="text-xs text-gray-500 uppercase tracking-wide">Producto</Label>
+                          <FormTextInput
+                            readOnly={true}
+                            value={product.name}
+                            className="font-medium text-sm bg-white text-black" 
+                          />
+                      </div>
+                      <div className="">
+                        <Label htmlFor={`quantity-${product.id}`} className="text-xs text-gray-500 uppercase tracking-wide"> Cantidad (L)</Label>
+                        <FormNumberInput
+                          id={`quantity-${product.id}`}
+                          readOnly={false}
+                          value={product.totalQuantity}
+                          onChange={(e) => updateProductPricing(product.id, "totalQuantity", e.target.value)}
+                          required
+                          step="1"
+                          min="0" max="9999999"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor={`price-${product.id}`} className="text-xs text-gray-500 uppercase tracking-wide">Precio Unitario</Label>
+                        <FormNumberInput
+                          id={`price-${product.id}`}
+                          readOnly={false}
+                          value={product.unitPrice}
+                          onChange={(e) => updateProductPricing(product.id, "unitPrice", e.target.value)}
+                          required
+                          step="0.1"
+                          min="0" max="9999999"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs text-gray-500 uppercase tracking-wide">Subtotal</Label>
+                          <FormTextInput
+                            readOnly={true}
+                            value={formatPrice(calculateSubtotal(product.id))}
+                            className="font-medium text-black"
+                          />
+                      </div>
+                      <div>
+                        <Label htmlFor={`iva-${product.id}`} className="text-xs text-gray-500 uppercase tracking-wide">IVA (%)</Label>
+                        <FormNumberInput
+                          id={`iva-${product.id}`}
+                          readOnly={false}
+                          value={product.ivaPercentage}
+                          onChange={(e) => updateProductPricing(product.id, "ivaPercentage", e.target.value)}
+                          step="0.5" min="0" max="100"
+                          className="text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs text-gray-500 uppercase tracking-wide">Subtotal c/IVA</Label>
+                          <FormTextInput
+                            readOnly={true}
+                            value={formatPrice(calculateSubtotalWithIVA(product.id))}
+                            className="mt-1 p-2 bg-green-50 rounded text-sm font-bold flex items-center text-green-800"
+                          />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Invoice Summary */}
-      {pricePerLiter && Number.parseFloat(pricePerLiter) > 0 && (
-        <Card className="mb-6 border-green-200 bg-green-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-green-800">
-              <Check className="h-5 w-5" />
-              Resumen de Facturación
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span>Cantidad total:</span>
-                <span className="font-medium">{getTotalLiters()} L</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span>Precio por litro:</span>
-                <span className="font-medium">{formatPrice(Number.parseFloat(pricePerLiter))}</span>
-              </div>
-              <Separator />
-              <div className="flex justify-between items-center text-lg">
-                <span className="font-semibold">Total a facturar:</span>
-                <span className="font-bold text-green-700 text-xl">{formatPrice(getTotalAmount())}</span>
-              </div>
+      <Card className="mb-6 border-green-200 bg-green-50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-green-800">
+            <Check className="h-5 w-5" />
+            Resumen de Factura
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="text-center p-4 bg-white rounded-lg">
+              <p className="text-sm text-gray-600">Cantidad Total</p>
+              <p className="text-2xl font-bold text-blue-600">{getTotalQuantity().toFixed(2)} L</p>
             </div>
-          </CardContent>
-        </Card>
-      )}
+            <div className="text-center p-4 bg-white rounded-lg">
+              <p className="text-sm text-gray-600">Productos</p>
+              <p className="text-2xl font-bold text-purple-600">{Object.keys(productPricing).length}</p>
+            </div>
+            <div className="text-center p-4 bg-white rounded-lg">
+              <p className="text-sm text-gray-600">Total Final</p>
+              <p className="text-2xl font-bold text-green-600">{formatPrice(getTotalAmount())}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-4">
         <Button
           onClick={handleGenerateInvoice}
-          disabled={!pricePerLiter || Number.parseFloat(pricePerLiter) <= 0 || generating}
+          disabled={Object.values(productPricing).some((p) => p.unitPrice <= 0 || p.totalQuantity <= 0) || generating}
           className="bg-green-600 hover:bg-green-700 flex-1"
           size="lg"
         >
@@ -338,11 +481,11 @@ export default function BillingConfirmationPage() {
         </Button>
       </div>
 
-      {(!pricePerLiter || Number.parseFloat(pricePerLiter) <= 0) && (
+      {Object.values(productPricing).some((p) => p.unitPrice <= 0 || p.totalQuantity <= 0) && (
         <Alert className="mt-4">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            Por favor ingresa un precio por litro válido para continuar con la facturación.
+            Por favor completa todos los precios unitarios y cantidades para continuar con la facturación.
           </AlertDescription>
         </Alert>
       )}
