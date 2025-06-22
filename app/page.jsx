@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { Car, Package, BookOpen } from "lucide-react"
+import ToastHandler from "@/components/toast-handler"
 
 export default function Home() {
   return (
@@ -76,6 +77,7 @@ export default function Home() {
           <p className="text-center text-sm text-gray-600">Comenzá a facturar</p>
         </Link>
       </div>
+      <ToastHandler/>
     </main>
   )
 }

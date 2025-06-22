@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Calculator, FileText, History, DollarSign, AlertTriangle, Check, Plus, Minus } from "lucide-react"
+import { ArrowLeft, Calculator, FileText, History, DollarSign, AlertTriangle, Check, Plus, Minus, User, SquareChartGantt } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -13,6 +13,9 @@ import { fetchDailyBookItemsInIds } from "@/lib/daily-book/api"
 import { useToast } from "@/components/ui/toast"
 import { FormNumberInput } from "@/components/ui/inputs/form-number-input"
 import { FormTextInput } from "@/components/ui/inputs/form-text-input"
+import { FormDatePicker } from "@/components/ui/inputs/form-date-picker"
+import ObjectViewer from "@/components/object-viewer"
+import { processNewInvoice } from "@/lib/invoice/api"
 
 const mockPriceHistory = [
   { date: "2024-01-10", pricePerLiter: 850.5, totalAmount: 127575.0, itemsCount: 3 },
@@ -42,6 +45,7 @@ export default function BillingConfirmationPage() {
   const [showHistory, setShowHistory] = useState(false)
   const [productPricing, setProductPricing] = useState({})
   const [globalIVA, setGlobalIVA] = useState(21)
+  const [date, setDate] = useState()
 
   // Get item IDs from URL
   const itemIds = searchParams.get("items")?.split(",").map((id) => Number.parseInt(id)) || []
@@ -163,8 +167,46 @@ export default function BillingConfirmationPage() {
       return
     }
 
-    // Aquí iría la lógica para generar la factura
-    console.log("Generating invoice with:", productPricing)
+    if (!date) {
+      toast({
+        title: "Faltan campos obligatorios",
+        description: "Completa la fecha de la factura",
+        type: "error",
+        duration: 8000,
+      })
+      return
+    }
+
+    const invoiceInformation = {
+      invoiceDate: date,
+      clientId: items[0].client.id,
+      dbiIds: items.map(item => item.id),
+      invoiceItems: items.map(item => {
+        const pricing = productPricing[item.product.id]
+        return {
+          productId: item.product.id,
+          amount: item.amount,
+          pricePerUnit: pricing.unitPrice,
+          ivaPercentage: pricing.ivaPercentage
+        }
+      })
+    }
+    console.log("Invoice Information:", invoiceInformation);
+    
+    setGenerating(true)
+    try {
+      await processNewInvoice(invoiceInformation);
+      router.push("/?invoice=success"); // TODO: More robust solution 
+    } catch (error) {
+      setGenerating(false)
+      toast({
+        title: "Error al generar la factura",
+        description: error.data || "Ocurrió un error inesperado",
+        type: "error",
+        duration: 8000,
+      })
+      return
+    }
   }
 
   if (loading) {
@@ -184,7 +226,7 @@ export default function BillingConfirmationPage() {
         </Link>
 
         <div className="text-center py-10">
-          <AlertTriangle className="mx-auto h-12 w-12 text-red-400 mb-4" />
+          <SquareChartGantt className="mx-auto h-12 w-12 text-red-400 mb-4" />
           <h1 className="text-2xl font-bold text-gray-900 mb-2">No se encontraron items</h1>
           <p className="text-gray-500">Los items seleccionados no están disponibles para facturación.</p>
         </div>
@@ -206,12 +248,27 @@ export default function BillingConfirmationPage() {
         </Badge>
       </div>
 
+
+      {/* <ObjectViewer data={items} className="my-2"></ObjectViewer>
+      <ObjectViewer data={productPricing} className="my-2"></ObjectViewer>
+      <ObjectViewer data={date} className="my-2"></ObjectViewer> */}
+
+      <div className="mb-6">
+        <Label htmlFor="date">Fecha de factura</Label>
+        <FormDatePicker
+          id="date"
+          onChange={(e) => setDate(e.target.value)}
+          value={date}
+          required
+        />
+      </div>
+
       {/* Client Information */}
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Información del Cliente
+            <User className="h-5 w-5" />
+            Cliente
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -236,8 +293,8 @@ export default function BillingConfirmationPage() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Calculator className="h-5 w-5" />
-            Elementos a facturar
+            <SquareChartGantt className="h-5 w-5" />
+            Items seleccionados
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -315,7 +372,7 @@ export default function BillingConfirmationPage() {
             {/* Historical Prices */}
             {priceHistory.length > 0 && (
               <div>
-                <Button variant="outline" size="sm" onClick={() => setShowHistory(!showHistory)} className="mb-3">
+                <Button variant="outline" size="sm" onClick={() => setShowHistory(!showHistory)} className="">
                   <History className="mr-2 h-4 w-4" />
                   {showHistory ? "Ocultar" : "Ver"} Historial de Precios
                 </Button>
@@ -355,7 +412,7 @@ export default function BillingConfirmationPage() {
 
             {/* Product pricing*/}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Configuración por Producto</h3>
+              <h3 className="text-lg font-semibold">Precio por producto</h3>
 
               {Object.values(productPricing).map((product) => (
                 <Card key={product.id} className="border-l-4 border-l-blue-500">
