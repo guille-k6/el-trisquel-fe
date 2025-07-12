@@ -527,13 +527,6 @@ export default function LibroDiarioDetail({ params }) {
             </div>
           ) : (
             <div className="space-y-4">
-              <div>
-                <h2 className="text-lg font-semibold mb-4">Selected Vehicles:</h2>
-                <pre className="bg-gray-100 p-4 rounded mb-6 overflow-auto max-h-60">
-                  {JSON.stringify(formData, null, 2)}
-                </pre>
-                <div>{latestVoucherNumber} || {latestXVoucher}</div>
-              </div>
               {formData.items.map((item, index) => (
                 <Card key={index} className="">
                   <CardContent className="p-4">
