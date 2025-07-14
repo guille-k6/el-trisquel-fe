@@ -12,6 +12,9 @@ import { FormTextInput } from "@/components/ui/inputs/form-text-input"
 import { deleteClient } from "@/lib/customer/api"
 import { useToast } from "@/components/ui/toast"
 import { postNewClient } from "@/lib/customer/api"
+import { fetchTiposDocumento } from "@/lib/afip/api"
+import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
+import { FormNumberInput } from "@/components/ui/inputs/form-number-input"
 
 export default function ClientDetail({ params }) {
   const { toast } = useToast()
@@ -22,12 +25,17 @@ export default function ClientDetail({ params }) {
   const [saving, setSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({
-    name: "",
+    id,
     address: "",
+    docNumber: "",
+    docType: "",
+    email: "",
+    name: "",
     phoneNumber: "",
   })
   const [formDataCopy, setFormDataCopy] = useState({})
   const [foundClient, setFoundClient] = useState(true)
+  const [tipoDoc, setTipoDoc] = useState([])
 
   useEffect(() => {
     getClient()
@@ -36,17 +44,16 @@ export default function ClientDetail({ params }) {
   const getClient = async () => {
     try {
       const data = await fetchClientById(id)
-      setFormData({
-        name: data.name,
-        address: data.address,
-        phoneNumber: data.phoneNumber,
-      })
-      
+      const [clientData, tipoDoc] = await Promise.all([
+        fetchClientById(id),
+        fetchTiposDocumento()])
+      setFormData(clientData)
+      setTipoDoc(tipoDoc);
     } catch (error) {
       setFoundClient(false)
       toast({
         title: "Error",
-        description: error.data,
+        description: error.message,
         type: "error",
         duration: 8000,
       })
@@ -64,12 +71,7 @@ export default function ClientDetail({ params }) {
     setSaving(true)
 
     try {
-      await postNewClient({
-        id: id,
-        name: formData.name,
-        address: formData.address,
-        phoneNumber: formData.phoneNumber,
-      })
+      await postNewClient(formData);
       setIsEditing(false)
       toast({
         title: "Actualizado",
@@ -78,9 +80,10 @@ export default function ClientDetail({ params }) {
         duration: 7000,
       })
     } catch (error) {
+      console.log(error);
       toast({
         title: "Error",
-        description: error.data,
+        description: error.message,
         type: "error",
         duration: 8000,
       })
@@ -91,8 +94,6 @@ export default function ClientDetail({ params }) {
 
   const handleDelete = async (e) => {
     e.preventDefault()
-    console.log("entrando al delete");
-    
     try {
       await deleteClient(id)
       router.push("/clientes")
@@ -102,10 +103,10 @@ export default function ClientDetail({ params }) {
         type: "success",
         duration: 7000,
       })
-    } catch (error) {
+    } catch (error) { 
       toast({
         title: "Error",
-        description: error.data,
+        description: error.message,
         type: "error",
         duration: 7000,
       })
@@ -138,6 +139,13 @@ export default function ClientDetail({ params }) {
       [field]: e.target.value,
     });
   };
+
+  const handleChange = (field, value) => {
+    setFormData({
+      ...formData,
+      [field]: value,
+    })
+  }
 
   if (loading) {
     return (
@@ -184,6 +192,31 @@ export default function ClientDetail({ params }) {
         <div className="space-y-2">
           <Label htmlFor="phoneNumber">Número de teléfono</Label>
           <FormTextInput id="phoneNumber" readOnly={!isEditing} value={formData.phoneNumber} onChange={handleInputChange("phoneNumber")} required/>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <FormTextInput id="email" readOnly={!isEditing} value={formData.email} onChange={handleInputChange("email")} required/>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="docType">Tipo de documento</Label>
+          <FormCombo
+            id="docType"
+            options={tipoDoc.elements}
+            placeholder="Vehículo..."
+            onChange={(option) => handleChange("docType", option["codigo"])}
+            readOnly={!isEditing}
+            defaultValue={tipoDoc.default}
+            displayKey="descripcion"
+            valueKey="codigo"
+            required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="phoneNumber">Número de documento</Label>
+          <FormNumberInput id="phoneNumber" readOnly={!isEditing} value={formData.docNumber} onChange={handleInputChange("docNumber")} required min='0'/>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 pt-4">

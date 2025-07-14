@@ -70,6 +70,8 @@ export default function LibroDiarioDetail({ params }) {
         fetchLatestVoucherNumber(),
         fetchLatestXVoucher()
       ])
+      console.log(vehiclesData);
+      
 
       if(libroDiarioData !== null && libroDiarioData.items !== null) {
         libroDiarioData.items.forEach(item => {

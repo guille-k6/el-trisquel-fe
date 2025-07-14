@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, Save } from "lucide-react"
@@ -10,23 +10,37 @@ import { X } from "lucide-react"
 import { FormTextInput } from "@/components/ui/inputs/form-text-input"
 import { postNewClient } from "@/lib/customer/api"
 import { useToast } from "@/components/ui/toast"
+import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
+import { FormNumberInput } from "@/components/ui/inputs/form-number-input"
+import { fetchTiposDocumento } from "@/lib/afip/api"
+import ObjectViewer from "@/components/object-viewer"
 
 export default function NewClient() {
   const router = useRouter()
   const { toast } = useToast()
   const [saving, setSaving] = useState(false)
   const [formData, setFormData] = useState({});
+  const [tipoDoc, setTipoDoc] = useState([])
+
+  useEffect(() => {
+    getDefaults()
+  }, [])
+
+  const getDefaults = async () => {
+     const tipoDoc = await fetchTiposDocumento();
+     setTipoDoc(tipoDoc);  
+     setFormData({
+      ...formData,
+      docType: tipoDoc.default.codigo,
+     })
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSaving(true)
 
     try {
-      await postNewClient({
-        name: formData.name,
-        address: formData.address,
-        phoneNumber: formData.phoneNumber,
-      })
+      await postNewClient(formData)
       toast({
         title: "Creado",
         description: "El cliente se creó exitosamente",
@@ -37,7 +51,7 @@ export default function NewClient() {
     } catch (error) {
       toast({
         title: "Error",
-        description: error.data,
+        description: error.message,
         type: "error",
         duration: 8000,
       })
@@ -58,6 +72,13 @@ export default function NewClient() {
     });
   };
 
+  const handleChange = (field, value) => {
+    setFormData({
+      ...formData,
+      [field]: value,
+    })
+  }
+
   return (
     <div className="min-h-screen p-4 max-w-2xl mx-auto">
       <Link href="/clientes" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
@@ -70,18 +91,47 @@ export default function NewClient() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="name">Nombre</Label>
-          <FormTextInput id="name" readOnly={false} onChange={handleInputChange("name")} required/>
+          <FormTextInput id="name" value={formData.name} readOnly={false} onChange={handleInputChange("name")} required/>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="address">Dirección</Label>
-          <FormTextInput id="address" readOnly={false} onChange={handleInputChange("address")} required/>
+          <FormTextInput id="address" value={formData.address} readOnly={false} onChange={handleInputChange("address")} required/>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="phoneNumber">Número de Teléfono</Label>
-          <FormTextInput id="phoneNumber" readOnly={false} onChange={handleInputChange("phoneNumber")} required/>
+          <FormTextInput id="phoneNumber" value={formData.phoneNumber} readOnly={false} onChange={handleInputChange("phoneNumber")} required/>
         </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <FormTextInput id="email" value={formData.email} onChange={handleInputChange("email")} required/>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="docType">Tipo de documento</Label>
+          <FormCombo
+            id="docType"
+            options={tipoDoc.elements}
+            placeholder="Vehículo..."
+            onChange={(option) => handleChange("docType", option["codigo"])}
+            defaultValue={tipoDoc.default}
+            displayKey="descripcion"
+            valueKey="codigo"
+            required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="phoneNumber">Número de documento</Label>
+          <FormNumberInput id="phoneNumber" value={formData.docNumber} onChange={handleInputChange("docNumber")} required min='0'/>
+        </div>
+
+        
+        <ObjectViewer data={formData}></ObjectViewer>
+
+
 
         <Button type="submit" className="bg-green-600 hover:bg-green-700 mt-4 mr-2" disabled={saving}>
           {saving ? (

@@ -1,6 +1,9 @@
 import { cn } from "@/lib/utils"
 
 function FormTextInput({ readOnly, value, onChange, className, ...props }) {
+  if (value === undefined || value === null) {
+    value = ""
+  }
   return (
     <input
       type="text"
