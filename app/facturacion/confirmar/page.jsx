@@ -16,6 +16,8 @@ import { FormTextInput } from "@/components/ui/inputs/form-text-input"
 import { FormDatePicker } from "@/components/ui/inputs/form-date-picker"
 import ObjectViewer from "@/components/object-viewer"
 import { processNewInvoice } from "@/lib/invoice/api"
+import { fetchIvas } from "@/lib/afip/api"
+import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
 
 const mockPriceHistory = [
   { date: "2024-01-10", pricePerLiter: 850.5, totalAmount: 127575.0, itemsCount: 3 },
@@ -44,8 +46,8 @@ export default function BillingConfirmationPage() {
   const [priceHistory, setPriceHistory] = useState([])
   const [showHistory, setShowHistory] = useState(false)
   const [productPricing, setProductPricing] = useState({})
-  const [globalIVA, setGlobalIVA] = useState(21)
   const [date, setDate] = useState()
+  const [ivas, setIvas] = useState([])
 
   // Get item IDs from URL
   const itemIds = searchParams.get("items")?.split(",").map((id) => Number.parseInt(id)) || []
@@ -65,12 +67,15 @@ export default function BillingConfirmationPage() {
       setItems(searchedItems)
       setClient(searchedItems[0].client)
       setPriceHistory(mockPriceHistory)
-
+      const ivas = await fetchIvas();
+      setIvas(ivas)
       // Inicializar configuración de precios por producto
-      initializeProductPricing(searchedItems)
+      initializeProductPricing(searchedItems, ivas)
 
       setLoading(false)
     } catch (error) {
+      console.log(error);
+      
       toast({
         title: "Error",
         description: error.data,
@@ -80,7 +85,7 @@ export default function BillingConfirmationPage() {
     }
   }
 
-  const initializeProductPricing = (items) => {
+  const initializeProductPricing = (items, ivaList) => {
     const groupedProducts = {}
 
     items.forEach((item) => {
@@ -93,7 +98,7 @@ export default function BillingConfirmationPage() {
           name: productName,
           totalQuantity: 0,
           unitPrice: mockPriceHistory.length > 0 ? mockPriceHistory[0].pricePerLiter : 0,
-          ivaPercentage: 21,
+          ivaPercentage: ivaList.default.codigo,
         }
       }
 
@@ -139,14 +144,6 @@ export default function BillingConfirmationPage() {
     return Object.values(productPricing).reduce((total, product) => {
       return total + product.totalQuantity
     }, 0)
-  }
-
-  const applyGlobalIVA = () => {
-    const updatedPricing = { ...productPricing }
-    Object.keys(updatedPricing).forEach((productId) => {
-      updatedPricing[productId].ivaPercentage = globalIVA
-    })
-    setProductPricing(updatedPricing)
   }
 
   const applyHistoricalPrice = (price) => {
@@ -350,25 +347,6 @@ export default function BillingConfirmationPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
-            {/* Global IVA Configuration */}
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <div className="flex-1">
-                <Label htmlFor="globalIVA" className="text-sm font-medium">IVA Global (%)</Label>
-                  <FormNumberInput
-                    id="globalIVA"
-                    readOnly={false}
-                    value={globalIVA}
-                    onChange={(e) => setGlobalIVA(Number.parseFloat(e.target.value) || 0)}
-                    min="0" max="9999999"
-                    step="0.5"
-                    className={"bg-white mt-1 w-full sm:w-32"}
-                  />
-                </div>
-                <Button variant="outline" size="sm" onClick={applyGlobalIVA} className="self-end w-full sm:w-32">Aplicar a todos</Button>
-              </div>
-            </div>
-
             {/* Historical Prices */}
             {priceHistory.length > 0 && (
               <div>
@@ -460,13 +438,15 @@ export default function BillingConfirmationPage() {
                       </div>
                       <div>
                         <Label htmlFor={`iva-${product.id}`} className="text-xs text-gray-500 uppercase tracking-wide">IVA (%)</Label>
-                        <FormNumberInput
+                        <FormCombo
                           id={`iva-${product.id}`}
-                          readOnly={false}
-                          value={product.ivaPercentage}
-                          onChange={(e) => updateProductPricing(product.id, "ivaPercentage", e.target.value)}
-                          step="0.5" min="0" max="100"
-                          className="text-sm"
+                          options={ivas.elements}
+                          placeholder="Seleccionar IVA..."
+                          onChange={(option) => updateProductPricing(product.id, "ivaPercentage", option["codigo"])}
+                          defaultValue={ivas.default}
+                          displayKey="descripcion"
+                          valueKey="codigo"
+                          required
                         />
                       </div>
                       <div>

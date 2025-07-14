@@ -128,11 +128,6 @@ export default function NewClient() {
           <FormNumberInput id="phoneNumber" value={formData.docNumber} onChange={handleInputChange("docNumber")} required min='0'/>
         </div>
 
-        
-        <ObjectViewer data={formData}></ObjectViewer>
-
-
-
         <Button type="submit" className="bg-green-600 hover:bg-green-700 mt-4 mr-2" disabled={saving}>
           {saving ? (
             <>
