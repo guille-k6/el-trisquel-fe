@@ -265,110 +265,53 @@ export default function BillingConfirmationPage() {
               </div>
             </div>
 
-            <Card className="border-gray-200 shadow-lg bg-white/80 backdrop-blur-sm">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3 mb-4">
+          <Card className="border-gray-200 shadow-lg bg-white/80 backdrop-blur-sm">
+            <CardHeader className="pb-4">
+                <CardTitle className="text-xl text-gray-900">Ingresar fecha, precio y cantidades a facturar</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-8">
+              {/* Sección de Fecha de Factura */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
                   <div className="bg-blue-100 p-2 rounded-lg">
                     <Calendar className="h-5 w-5 text-blue-600" />
                   </div>
                   <div>
-                    <Label htmlFor="date" className="text-lg font-semibold text-gray-900">
-                      Fecha de factura
-                    </Label>
+                    <h3 className="text-lg font-semibold text-gray-900">Fecha de factura</h3>
                     <p className="text-sm text-gray-600">Selecciona la fecha para esta factura</p>
                   </div>
                 </div>
-                <FormDatePicker
-                  id="date"
-                  onChange={(e) => setDate(e.target.value)}
-                  value={date}
-                  required
-                />
-              </CardContent>
-            </Card>
+                <FormDatePicker id="date" onChange={(e) => setDate(e.target.value)} value={date} required />
+              </div>
 
-            <Card className="border-gray-200 shadow-lg bg-white/80 backdrop-blur-sm">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-3 text-xl">
+              {/* Sección de Configuración de Precios */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
                   <div className="bg-orange-100 p-2 rounded-lg">
                     <DollarSign className="h-5 w-5 text-orange-600" />
                   </div>
-                  Configuración de Precios
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Historical Prices */}
-                {priceHistory.length > 0 && (
-                  <div className="bg-blue-50 rounded-xl p-6 border border-blue-200">
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowHistory(!showHistory)}
-                      className="mb-4 bg-white hover:bg-blue-50 border-blue-200"
-                    >
-                      {showHistory ? <EyeOff className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4" />}
-                      {showHistory ? "Ocultar" : "Ver"} Historial de Precios
-                    </Button>
-
-                    {showHistory && (
-                      <div className="space-y-3 max-h-60 overflow-y-auto">
-                        {priceHistory.map((record, index) => (
-                          <div
-                            key={index}
-                            className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-white rounded-lg border border-blue-200 hover:shadow-md transition-shadow"
-                          >
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                              <span className="text-sm font-medium text-gray-600">{record.date}</span>
-                              <Badge
-                                variant="outline"
-                                className="text-xs w-fit bg-blue-50 text-blue-700 border-blue-200"
-                              >
-                                {record.itemsCount} items
-                              </Badge>
-                            </div>
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                              <span className="font-bold text-lg text-gray-900">
-                                {formatPrice(record.pricePerLiter)}/L
-                              </span>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => applyHistoricalPrice(record.pricePerLiter)}
-                                className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 font-medium"
-                              >
-                                <TrendingUp className="mr-1 h-3 w-3" />
-                                Aplicar a todos
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
+                  <h3 className="text-xl font-semibold text-gray-900">Configuración de Precios</h3>
+                </div>
 
                 {/* Product Pricing */}
                 <div className="space-y-6">
-                  <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <h4 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                     <Calculator className="h-5 w-5 text-gray-600" />
                     Precio por Producto
-                  </h3>
-
+                  </h4>
                   <div className="space-y-4">
                     {Object.values(productPricing).map((product) => (
                       <Card key={product.id} className="border-l-4 border-l-blue-500 border-gray-200">
                         <CardContent className="p-6">
                           <div className="grid grid-cols-1 lg:grid-cols-6 gap-4">
                             <div className="lg:col-span-1">
-                              <Label className="text-xs text-gray-500 uppercase tracking-wide font-medium">
-                                Producto
-                              </Label>
+                              <Label className="text-xs text-gray-500 uppercase tracking-wide font-medium">Producto</Label>
                               <FormTextInput
                                 readOnly={true}
                                 value={product.name}
                                 className="font-semibold text-sm bg-white border-gray-200 text-gray-900 mt-1"
                               />
                             </div>
-
                             <div>
                               <Label
                                 htmlFor={`quantity-${product.id}`}
@@ -388,7 +331,6 @@ export default function BillingConfirmationPage() {
                                 className="mt-1"
                               />
                             </div>
-
                             <div>
                               <Label
                                 htmlFor={`price-${product.id}`}
@@ -408,18 +350,14 @@ export default function BillingConfirmationPage() {
                                 className="mt-1"
                               />
                             </div>
-
                             <div>
-                              <Label className="text-xs text-gray-500 uppercase tracking-wide font-medium">
-                                Subtotal
-                              </Label>
+                              <Label className="text-xs text-gray-500 uppercase tracking-wide font-medium">Subtotal</Label>
                               <FormTextInput
                                 readOnly={true}
                                 value={formatPrice(calculateSubtotal(product.id))}
                                 className="font-semibold text-gray-900 bg-gray-50 mt-1 border-gray-200"
                               />
                             </div>
-
                             <div>
                               <Label
                                 htmlFor={`iva-${product.id}`}
@@ -439,7 +377,6 @@ export default function BillingConfirmationPage() {
                                 className="mt-1"
                               />
                             </div>
-
                             <div>
                               <Label className="text-xs text-gray-500 uppercase tracking-wide font-medium">
                                 Subtotal c/IVA
@@ -455,10 +392,53 @@ export default function BillingConfirmationPage() {
                       </Card>
                     ))}
                   </div>
+                  {/* Historical Prices */}
+                  {priceHistory.length > 0 && (
+                    <div className="bg-blue-50 rounded-xl p-6 border border-blue-200">
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowHistory(!showHistory)}
+                        className="mb-4 bg-white hover:bg-blue-50 border-blue-200"
+                      >
+                        {showHistory ? <EyeOff className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4" />}
+                        {showHistory ? "Ocultar" : "Ver"} Historial de Precios
+                      </Button>
+                      {showHistory && (
+                        <div className="space-y-3 max-h-60 overflow-y-auto">
+                          {priceHistory.map((record, index) => (
+                            <div
+                              key={index}
+                              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-white rounded-lg border border-blue-200 hover:shadow-md transition-shadow"
+                            >
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                                <span className="text-sm font-medium text-gray-600">{record.date}</span>
+                                <Badge variant="outline" className="text-xs w-fit bg-blue-50 text-blue-700 border-blue-200">
+                                  {record.itemsCount} items
+                                </Badge>
+                              </div>
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                                <span className="font-bold text-lg text-gray-900">{formatPrice(record.pricePerLiter)}/L</span>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => applyHistoricalPrice(record.pricePerLiter)}
+                                  className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 font-medium"
+                                >
+                                  <TrendingUp className="mr-1 h-3 w-3" />
+                                  Aplicar a todos
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
+      </div>
 
           {/* RESUMEN */}
           <div className="space-y-6">
@@ -506,7 +486,6 @@ export default function BillingConfirmationPage() {
                 </AlertDescription>
               </Alert>
             )}
-            <ObjectViewer data={productPricing}></ObjectViewer>
           </div>
         </div>
       </div>

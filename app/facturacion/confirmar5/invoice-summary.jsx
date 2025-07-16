@@ -103,8 +103,6 @@ export default function InvoiceSummary( {productPricing, ivas} ) {
                     <span className="text-2xl font-bold text-green-600">{formatPrice(getTotalAmount())}</span>
                 </div>
             </div>
-            <ObjectViewer data={getIVABreakdown()}></ObjectViewer>
-            <ObjectViewer data={productPricing}></ObjectViewer>
         </CardContent>
     </Card>
     )
