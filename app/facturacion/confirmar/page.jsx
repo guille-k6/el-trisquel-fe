@@ -98,7 +98,7 @@ export default function BillingConfirmationPage() {
           name: productName,
           totalQuantity: 0,
           unitPrice: mockPriceHistory.length > 0 ? mockPriceHistory[0].pricePerLiter : 0,
-          ivaPercentage: ivaList.default.codigo,
+          ivaCode: ivaList.default.codigo,
         }
       }
 
@@ -114,7 +114,7 @@ export default function BillingConfirmationPage() {
       [productId]: {
         ...prev[productId],
         [field]:
-          field === "totalQuantity" || field === "unitPrice" || field === "ivaPercentage"
+          field === "totalQuantity" || field === "unitPrice" || field === "ivaCode"
             ? Number.parseFloat(value) || 0
             : value,
       },
@@ -131,7 +131,7 @@ export default function BillingConfirmationPage() {
     const subtotal = calculateSubtotal(productId)
     const product = productPricing[productId]
     if (!product) return 0
-    return subtotal + (subtotal * product.ivaPercentage) / 100
+    return subtotal + (subtotal * product.ivaCode) / 100
   }
 
   const getTotalAmount = () => {
@@ -184,7 +184,7 @@ export default function BillingConfirmationPage() {
           productId: item.product.id,
           amount: item.amount,
           pricePerUnit: pricing.unitPrice,
-          ivaPercentage: pricing.ivaPercentage
+          ivaCode: pricing.ivaCode
         }
       })
     }
@@ -442,7 +442,7 @@ export default function BillingConfirmationPage() {
                           id={`iva-${product.id}`}
                           options={ivas.elements}
                           placeholder="Seleccionar IVA..."
-                          onChange={(option) => updateProductPricing(product.id, "ivaPercentage", option["codigo"])}
+                          onChange={(option) => updateProductPricing(product.id, "ivaCode", option["codigo"])}
                           defaultValue={ivas.default}
                           displayKey="descripcion"
                           valueKey="codigo"
@@ -465,6 +465,8 @@ export default function BillingConfirmationPage() {
           </div>
         </CardContent>
       </Card>
+      <ObjectViewer data={ivas} className="my-2" />
+      <ObjectViewer data={productPricing} className="my-2" />
 
       {/* Invoice Summary */}
       <Card className="mb-6 border-green-200 bg-green-50">
