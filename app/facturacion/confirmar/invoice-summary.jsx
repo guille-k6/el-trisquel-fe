@@ -35,8 +35,8 @@ export default function InvoiceSummary( {productPricing, ivas} ) {
     const calculateSubtotalWithIVA = (productId) => {
         const subtotal = calculateSubtotal(productId)
         const product = productPricing[productId]
-        const associatedIva = ivas.elements.find((iva) => iva.codigo === product.ivaCode);
-        return subtotal + (subtotal * associatedIva.porcentaje) / 100;
+        const associatedIva = ivas.elements.find((iva) => iva.code === product.ivaCode);
+        return subtotal + (subtotal * associatedIva.percentage) / 100;
     }
     
     const getIVABreakdown = () => {
@@ -47,7 +47,7 @@ export default function InvoiceSummary( {productPricing, ivas} ) {
           const subtotal = calculateSubtotal(productId);
       
           // Buscar el IVA asociado al producto
-          const associatedIva = ivas.elements.find((iva) => iva.codigo === product.ivaCode);
+          const associatedIva = ivas.elements.find((iva) => iva.code === product.ivaCode);
       
           if (!associatedIva) {
             console.warn(`No se encontró un IVA asociado para el código: ${product.ivaCode}`);
@@ -55,15 +55,15 @@ export default function InvoiceSummary( {productPricing, ivas} ) {
           }
       
           // Calcular el monto del IVA
-          const ivaAmount = (subtotal * associatedIva.porcentaje) / 100;
+          const ivaAmount = (subtotal * associatedIva.percentage) / 100;
       
           // Si ya existe el IVA en el mapa, sumar el monto
-          if (ivaBreakdown[associatedIva.codigo]) {
-            ivaBreakdown[associatedIva.codigo].total += ivaAmount;
+          if (ivaBreakdown[associatedIva.code]) {
+            ivaBreakdown[associatedIva.code].total += ivaAmount;
           } else {
             // Si no existe, inicializar el objeto con el nombre y el monto
-            ivaBreakdown[associatedIva.codigo] = {
-              descripcion: associatedIva.descripcion,
+            ivaBreakdown[associatedIva.code] = {
+              description: associatedIva.description,
               total: ivaAmount,
             };
           }
@@ -90,9 +90,9 @@ export default function InvoiceSummary( {productPricing, ivas} ) {
                 </div>
 
                 <div className="space-y-3">
-                    {Object.entries(getIVABreakdown()).map(([ivaRate, { descripcion, total }]) => (                        
+                    {Object.entries(getIVABreakdown()).map(([ivaRate, { description, total }]) => (                        
                     <div key={ivaRate} className="flex justify-between items-center p-4 bg-white rounded-xl shadow-sm border border-gray-200">
-                        <span className="text-lg font-medium text-gray-700">{descripcion}</span>
+                        <span className="text-lg font-medium text-gray-700">{description}</span>
                         <span className="text-lg font-bold text-gray-900">{formatPrice(total)}</span>
                     </div>
                     ))}

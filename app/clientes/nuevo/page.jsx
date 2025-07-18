@@ -19,7 +19,14 @@ export default function NewClient() {
   const router = useRouter()
   const { toast } = useToast()
   const [saving, setSaving] = useState(false)
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState({
+    address: "",
+    docNumber: "",
+    docType: "",
+    email: "",
+    name: "",
+    phoneNumber: "",
+  });
   const [tipoDoc, setTipoDoc] = useState([])
 
   useEffect(() => {
@@ -73,11 +80,11 @@ export default function NewClient() {
   };
 
   const handleChange = (field, value) => {
-    setFormData({
-      ...formData,
+    setFormData((prevFormData) => ({
+      ...prevFormData,
       [field]: value,
-    })
-  }
+    }));
+  };
 
   return (
     <div className="min-h-screen p-4 max-w-2xl mx-auto">
@@ -115,10 +122,10 @@ export default function NewClient() {
             id="docType"
             options={tipoDoc.elements}
             placeholder="Vehículo..."
-            onChange={(option) => handleChange("docType", option["codigo"])}
+            onChange={(option) => handleChange("docType", option.code)}
             defaultValue={tipoDoc.default}
-            displayKey="descripcion"
-            valueKey="codigo"
+            displayKey="description"
+            valueKey="code"
             required
           />
         </div>

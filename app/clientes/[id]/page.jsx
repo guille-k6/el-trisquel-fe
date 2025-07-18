@@ -15,6 +15,7 @@ import { postNewClient } from "@/lib/customer/api"
 import { fetchTiposDocumento } from "@/lib/afip/api"
 import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
 import { FormNumberInput } from "@/components/ui/inputs/form-number-input"
+import ObjectViewer from "@/components/object-viewer"
 
 export default function ClientDetail({ params }) {
   const { toast } = useToast()
@@ -62,14 +63,11 @@ export default function ClientDetail({ params }) {
     }
   }
 
-  /**
-   * Actually handles the update of a client.
-   * @param {*} e
-   */
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSaving(true)
-
+    console.log("Submitting form data:", formData);
+    
     try {
       await postNewClient(formData);
       setIsEditing(false)
@@ -83,7 +81,7 @@ export default function ClientDetail({ params }) {
       console.log(error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "No se pudo actualizar el cliente",
         type: "error",
         duration: 8000,
       })
@@ -104,6 +102,8 @@ export default function ClientDetail({ params }) {
         duration: 7000,
       })
     } catch (error) { 
+      console.log(error);
+      
       toast({
         title: "Error",
         description: error.message,
@@ -141,11 +141,11 @@ export default function ClientDetail({ params }) {
   };
 
   const handleChange = (field, value) => {
-    setFormData({
-      ...formData,
-      [field]: value,
-    })
-  }
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [field]: value, // Update the specific field in formData
+    }));
+  };
 
   if (loading) {
     return (
@@ -204,12 +204,12 @@ export default function ClientDetail({ params }) {
           <FormCombo
             id="docType"
             options={tipoDoc.elements}
-            placeholder="Vehículo..."
-            onChange={(option) => handleChange("docType", option["codigo"])}
+            placeholder="Tipo de documento"
+            onChange={(option) => handleChange("docType", option.code)}
             readOnly={!isEditing}
             defaultValue={tipoDoc.default}
-            displayKey="descripcion"
-            valueKey="codigo"
+            displayKey="description"
+            valueKey="code"
             required
           />
         </div>

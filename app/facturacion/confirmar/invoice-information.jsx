@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 
 export default function InvoiceInformation({ items, client }) {
+   
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-3 mb-6">
@@ -47,7 +48,7 @@ export default function InvoiceInformation({ items, client }) {
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs text-gray-500 uppercase tracking-wide font-medium">Tipo de Documento</Label>
-                  <p className="font-medium text-gray-700">{client.docType || "No especificado"}</p>
+                  <p className="font-medium text-gray-700">{client.docType.description || "No especificado"}</p>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs text-gray-500 uppercase tracking-wide font-medium">Número de Documento</Label>
