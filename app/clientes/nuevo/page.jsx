@@ -13,6 +13,7 @@ import { useToast } from "@/components/ui/toast"
 import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
 import { FormNumberInput } from "@/components/ui/inputs/form-number-input"
 import { fetchTiposDocumento } from "@/lib/afip/api"
+import { fetchIvaConditions } from "@/lib/afip/api"
 import ObjectViewer from "@/components/object-viewer"
 
 export default function NewClient() {
@@ -26,19 +27,26 @@ export default function NewClient() {
     email: "",
     name: "",
     phoneNumber: "",
+    condicionIva: {},
   });
   const [tipoDoc, setTipoDoc] = useState([])
+  const [ivaCondition, setIvaCondition] = useState([])
 
   useEffect(() => {
     getDefaults()
   }, [])
 
   const getDefaults = async () => {
-     const tipoDoc = await fetchTiposDocumento();
+    const [tipoDoc, ivaCondition] = await Promise.all([
+      fetchTiposDocumento(),
+      fetchIvaConditions()])
+
      setTipoDoc(tipoDoc);  
+     setIvaCondition(ivaCondition);
      setFormData({
       ...formData,
       docType: tipoDoc.default.codigo,
+      condicionIva: ivaCondition.default.codigo,
      })
   }
 
@@ -133,6 +141,21 @@ export default function NewClient() {
         <div className="space-y-2">
           <Label htmlFor="phoneNumber">Número de documento</Label>
           <FormNumberInput id="phoneNumber" value={formData.docNumber} onChange={handleInputChange("docNumber")} required min='0'/>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="condicionIva">Condición ante el IVA</Label>
+          <FormCombo
+            id="condicionIva"
+            options={ivaCondition.elements}
+            placeholder="Condición ante el IVA"
+            onChange={(option) => handleChange("condicionIva", option.code)}
+            readOnly={false}
+            defaultValue={ivaCondition.default}
+            displayKey="description"
+            valueKey="code"
+            required
+          />
         </div>
 
         <Button type="submit" className="bg-green-600 hover:bg-green-700 mt-4 mr-2" disabled={saving}>

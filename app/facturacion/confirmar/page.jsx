@@ -138,7 +138,7 @@ export default function BillingConfirmationPage() {
   const calculateSubtotalWithIVA = (productId) => {
     const subtotal = calculateSubtotal(productId)
     const product = productPricing[productId]
-    const associatedIva = ivas.elements.find((iva) => iva.code === product.ivaCode);
+    const associatedIva = ivas.elements.find((iva) => iva.code === product.iva);
     return subtotal + (subtotal * associatedIva.percentage) / 100;
   }
 
@@ -172,7 +172,7 @@ export default function BillingConfirmationPage() {
           productId: item.product.id,
           amount: item.amount,
           pricePerUnit: pricing.unitPrice,
-          iva: pricing.ivaCode,
+          iva: pricing.iva,
         }
       }),
     }
@@ -439,6 +439,8 @@ export default function BillingConfirmationPage() {
             </CardContent>
           </Card>
       </div>
+
+      <ObjectViewer data={productPricing}></ObjectViewer>
 
           {/* RESUMEN */}
           <div className="space-y-6">

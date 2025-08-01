@@ -35,7 +35,7 @@ export default function InvoiceSummary( {productPricing, ivas} ) {
     const calculateSubtotalWithIVA = (productId) => {
         const subtotal = calculateSubtotal(productId)
         const product = productPricing[productId]
-        const associatedIva = ivas.elements.find((iva) => iva.code === product.ivaCode);
+        const associatedIva = ivas.elements.find((iva) => iva.code === product.iva);
         return subtotal + (subtotal * associatedIva.percentage) / 100;
     }
     
@@ -45,12 +45,17 @@ export default function InvoiceSummary( {productPricing, ivas} ) {
         Object.keys(productPricing).forEach((productId) => {
           const product = productPricing[productId];
           const subtotal = calculateSubtotal(productId);
-      
+            console.log(product);
+            
+            
           // Buscar el IVA asociado al producto
-          const associatedIva = ivas.elements.find((iva) => iva.code === product.ivaCode);
-      
+          const associatedIva = ivas.elements.find((iva) => iva.code === product.iva);
+            console.log("Encontre el iva: " + associatedIva);
+            console.log(associatedIva);
+            
+            
           if (!associatedIva) {
-            console.warn(`No se encontró un IVA asociado para el código: ${product.ivaCode}`);
+            console.warn(`No se encontró un IVA asociado para el código: ${product.iva}`);
             return;
           }
       

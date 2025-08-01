@@ -15,6 +15,7 @@ import { postNewClient } from "@/lib/customer/api"
 import { fetchTiposDocumento } from "@/lib/afip/api"
 import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
 import { FormNumberInput } from "@/components/ui/inputs/form-number-input"
+import { fetchIvaConditions } from "@/lib/afip/api"
 import ObjectViewer from "@/components/object-viewer"
 
 export default function ClientDetail({ params }) {
@@ -33,10 +34,12 @@ export default function ClientDetail({ params }) {
     email: "",
     name: "",
     phoneNumber: "",
+    condicionIva: {},
   })
   const [formDataCopy, setFormDataCopy] = useState({})
   const [foundClient, setFoundClient] = useState(true)
   const [tipoDoc, setTipoDoc] = useState([])
+  const [ivaCondition, setIvaCondition] = useState([])
 
   useEffect(() => {
     getClient()
@@ -44,12 +47,17 @@ export default function ClientDetail({ params }) {
 
   const getClient = async () => {
     try {
-      const data = await fetchClientById(id)
-      const [clientData, tipoDoc] = await Promise.all([
+      const [clientData, tipoDoc, ivaCondition] = await Promise.all([
         fetchClientById(id),
-        fetchTiposDocumento()])
+        fetchTiposDocumento(),
+        fetchIvaConditions()])
+      console.log(clientData);
+      console.log(ivaCondition);
+      
+      
       setFormData(clientData)
       setTipoDoc(tipoDoc);
+      setIvaCondition(ivaCondition);
     } catch (error) {
       setFoundClient(false)
       toast({
@@ -66,8 +74,7 @@ export default function ClientDetail({ params }) {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSaving(true)
-    console.log("Submitting form data:", formData);
-    
+
     try {
       await postNewClient(formData);
       setIsEditing(false)
@@ -91,7 +98,6 @@ export default function ClientDetail({ params }) {
   }
 
   const handleDelete = async (e) => {
-    e.preventDefault()
     try {
       await deleteClient(id)
       router.push("/clientes")
@@ -207,7 +213,7 @@ export default function ClientDetail({ params }) {
             placeholder="Tipo de documento"
             onChange={(option) => handleChange("docType", option.code)}
             readOnly={!isEditing}
-            defaultValue={tipoDoc.default}
+            defaultValue={formData.docType}
             displayKey="description"
             valueKey="code"
             required
@@ -217,6 +223,21 @@ export default function ClientDetail({ params }) {
         <div className="space-y-2">
           <Label htmlFor="phoneNumber">Número de documento</Label>
           <FormNumberInput id="phoneNumber" readOnly={!isEditing} value={formData.docNumber} onChange={handleInputChange("docNumber")} required min='0'/>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="condicionIva">Condición ante el IVA</Label>
+          <FormCombo
+            id="condicionIva"
+            options={ivaCondition.elements}
+            placeholder="Condición ante el IVA"
+            onChange={(option) => handleChange("condicionIva", option.code)}
+            readOnly={!isEditing}
+            defaultValue={formData.condicionIva}
+            displayKey="description"
+            valueKey="code"
+            required
+          />
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 pt-4">
