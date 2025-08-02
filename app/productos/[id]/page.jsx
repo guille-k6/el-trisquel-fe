@@ -12,6 +12,7 @@ import { FormTextInput } from "@/components/ui/inputs/form-text-input"
 import { deleteProduct } from "@/lib/product/api"
 import { useToast } from "@/components/ui/toast"
 import { postNewProduct } from "@/lib/product/api"
+import ObjectViewer from "@/components/object-viewer"
 
 export default function ProductDetail({ params }) {
   const { toast } = useToast()
@@ -22,6 +23,7 @@ export default function ProductDetail({ params }) {
   const [saving, setSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({
+    id: '',
     name: '',
   })
   const [formDataCopy, setFormDataCopy] = useState({})
@@ -34,9 +36,7 @@ export default function ProductDetail({ params }) {
   const getProduct = async () => {
     try {
       const data = await fetchProductById(id)
-      setFormData({
-        name: data.name,
-      })
+      setFormData(data)
     } catch (error) {
       setFoundProduct(false)
       toast({
@@ -83,7 +83,6 @@ export default function ProductDetail({ params }) {
   }
 
   const handleDelete = async (e) => {
-    e.preventDefault()
     try {
       await deleteProduct(id)
       router.push("/productos")
@@ -95,8 +94,8 @@ export default function ProductDetail({ params }) {
       })
     } catch (error) {
       toast({
-        title: "Error",
-        description: error.data,
+        title: "Error al eliminar producto",
+        description: error.message,
         type: "error",
         duration: 7000,
       })
@@ -164,7 +163,7 @@ export default function ProductDetail({ params }) {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="name">Nombre del Producto</Label>
-          <FormTextInput id="name" readOnly={!isEditing} defaultValue={formData.name} onChange={handleInputChange("name")} required/>
+          <FormTextInput id="name" readOnly={!isEditing} value={formData.name} onChange={handleInputChange("name")} required/>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 pt-4">

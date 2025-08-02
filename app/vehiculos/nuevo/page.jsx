@@ -19,7 +19,11 @@ export default function NewVehicle() {
   const router = useRouter();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
-  const [formData, setFormData] = useState({purchaseDate: getTodayDateForInput()});
+  const [formData, setFormData] = useState({
+    name: "",
+    purchaseDate: getTodayDateForInput(),
+    purchaseDatePrice: "",
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -37,10 +41,9 @@ export default function NewVehicle() {
       })
       router.push("/vehiculos");
     } catch (error) {
-      console.log("NO PASE POR EL ERROR LAMENTABLEMENTE")
       toast({
         title: "Error",
-        description: error.data,
+        description: error.message || "No se pudo crear el vehiculo",
         type: "error",
         duration: 8000,
       })
@@ -73,34 +76,17 @@ export default function NewVehicle() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="name">Nombre del Vehículo</Label>
-          <FormTextInput
-            id="name"
-            readOnly={false}
-            onChange={handleInputChange("name")}
-            required
-          />
+          <FormTextInput id="name" value={formData.name} readOnly={false} onChange={handleInputChange("name")} required/>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="purchaseDate">Fecha de Compra</Label>
-          <FormDatePicker    
-              id="purchaseDate"   
-              readOnly={false}
-              value={getTodayDateForInput()}
-              onChange={handleInputChange("purchaseDate")}
-              required
-            />
+          <FormDatePicker id="purchaseDate" value={formData.purchaseDate} readOnly={false} onChange={handleInputChange("purchaseDate")} required/>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="purchaseDatePrice">Precio de Compra ($USD)</Label>
-          <FormNumberInput
-            id="purchaseDatePrice"
-            name="purchaseDatePrice"
-            readOnly={false}
-            onChange={handleInputChange("purchaseDatePrice")}
-            required
-          />
+          <FormNumberInput id="purchaseDatePrice" value={formData.purchaseDatePrice} name="purchaseDatePrice" readOnly={false} onChange={handleInputChange("purchaseDatePrice")} required/>
         </div>
 
         <Button type="submit" className="bg-green-600 hover:bg-green-700 mt-4 mr-2" disabled={saving}>

@@ -14,7 +14,6 @@ import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
 import { FormNumberInput } from "@/components/ui/inputs/form-number-input"
 import { fetchTiposDocumento } from "@/lib/afip/api"
 import { fetchIvaConditions } from "@/lib/afip/api"
-import ObjectViewer from "@/components/object-viewer"
 
 export default function NewClient() {
   const router = useRouter()

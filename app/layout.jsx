@@ -1,5 +1,7 @@
 import { ToastProvider } from "@/components/ui/toast";
 import "./globals.css";
+import Navbar from "@/components/ui/navbar";
+import Footer from "@/components/ui/footer";
 
 export const metadata = {
   title: "Sistema de Gestión",
@@ -9,9 +11,11 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="antialiased">
+      <body className="antialiased min-h-screen flex flex-col">
       <ToastProvider>
-        {children}
+        <Navbar />
+        <main className="flex-1">{children}</main>
+        <Footer />
       </ToastProvider>
       </body>
     </html>

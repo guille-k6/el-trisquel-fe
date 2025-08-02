@@ -47,7 +47,7 @@ export default function VehicleDetail({ params }) {
     } catch (error) {
       toast({
         title: "Error",
-        description: error.data,
+        description: error.message,
         type: "error",
         duration: 8000,
       })
@@ -63,9 +63,7 @@ export default function VehicleDetail({ params }) {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      await postNewVehicle(
-        {id: id, name: formData.name, purchaseDate: formData.purchaseDate, purchaseDatePrice: Number(formData.purchaseDatePrice)}
-      );
+      await postNewVehicle(formData);
       setIsEditing(false)
       toast({
         title: "Actualizado",
@@ -76,7 +74,7 @@ export default function VehicleDetail({ params }) {
     } catch (error) {
       toast({
         title: "Error",
-        description: error.data,
+        description: error.message,
         type: "error",
         duration: 8000,
       })
@@ -86,7 +84,6 @@ export default function VehicleDetail({ params }) {
   }
 
   const handleDelete = async (e) => {
-    e.preventDefault();
     try {
       await deleteVehicle(id)
       router.push("/vehiculos")
@@ -97,10 +94,9 @@ export default function VehicleDetail({ params }) {
         duration: 7000,
       })
     } catch (error) {
-      setFoundVehicle(false)
       toast({
-        title: "Error",
-        description: error.data,
+        title: "Error al eliminar vehículo",
+        description: error.message,
         type: "error",
         duration: 7000,
       })

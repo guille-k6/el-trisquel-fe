@@ -181,10 +181,10 @@ export default function Facturacion() {
   }
 
   return (
-    <div className="min-h-screen p-4 max-w-6xl mx-auto">
-      <Link href="/libros-diarios" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
+    <div className="min-h-screen p-4 max-w-4xl mx-auto">
+      <Link href="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
         <ArrowLeft className="mr-2 h-4 w-4" />
-        Volver a libros diarios
+        Volver al menú
       </Link>
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
@@ -253,27 +253,6 @@ export default function Facturacion() {
           </div>
         </CardContent>
       </Card>
-
-      {/* <div>
-        <h2 className="text-lg font-semibold mb-4">dbis:</h2>
-        <pre className="bg-gray-100 p-4 rounded mb-6 overflow-auto max-h-60">
-          {JSON.stringify(dailyBookItems, null, 2)}
-        </pre>
-      </div>
-
-      <div>
-        <h2 className="text-lg font-semibold mb-4">filters:</h2>
-        <pre className="bg-gray-100 p-4 rounded mb-6 overflow-auto max-h-60">
-          {JSON.stringify(filters, null, 2)}
-        </pre>
-      </div>
-
-      <div>
-        <h2 className="text-lg font-semibold mb-4">filters:</h2>
-        <pre className="bg-gray-100 p-4 rounded mb-6 overflow-auto max-h-60">
-          {JSON.stringify(selectedItems, null, 2)}
-        </pre>
-      </div> */}
 
       {selectedItems.length > 0 && (
         <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">

@@ -15,18 +15,16 @@ export default function NewProduct() {
   const router = useRouter()
   const { toast } = useToast()
   const [saving, setSaving] = useState(false)
-  const [formData, setFormData] = useState({})
-
-  const nameRef = useRef(null)
+  const [formData, setFormData] = useState({
+    name: "",
+  })
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSaving(true)
 
     try {
-      await postNewProduct({
-        name: formData.name,
-      })
+      await postNewProduct(formData)
       toast({
         title: "Creado",
         description: "El producto se creó exitosamente",
@@ -37,7 +35,7 @@ export default function NewProduct() {
     } catch (error) {
       toast({
         title: "Error",
-        description: error.data,
+        description: error.message || "Ocurrió un error al crear el producto",
         type: "error",
         duration: 8000,
       })
@@ -70,7 +68,7 @@ export default function NewProduct() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="name">Nombre del Producto</Label>
-          <FormTextInput id="name" readOnly={false} onChange={handleInputChange("name")} required/>
+          <FormTextInput id="name" value={formData.name} readOnly={false} onChange={handleInputChange("name")} required/>
         </div>
 
         <Button type="submit" className="bg-green-600 hover:bg-green-700 mt-4 mr-2" disabled={saving}>
