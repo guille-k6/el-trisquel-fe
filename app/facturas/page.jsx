@@ -3,131 +3,26 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, FileText, Search, X, Eye } from "lucide-react"
+import { ArrowLeft, FileText, Search, X, Eye, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/components/ui/toast"
 import { Card, CardContent } from "@/components/ui/card"
 import { FormDatePicker } from "@/components/ui/inputs/form-date-picker"
 import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
-import { Badge } from "@/components/ui/badge"
 import { formatDateToString, formatPrice } from "@/lib/utils"
 import Pagination from "@/components/ui/pagination"
-
-// Mock data para demostración - reemplaza con tu API real
-const mockClients = [
-  { id: 1, name: "Cliente A" },
-  { id: 2, name: "Cliente B" },
-  { id: 3, name: "un nuevo cliente" },
-]
-
-const statusOptions = [
-  { id: "QUEUED", name: "En Cola" },
-  { id: "PAID", name: "Pagada" },
-  { id: "PENDING", name: "Pendiente" },
-  { id: "CANCELLED", name: "Cancelada" },
-]
-
-// Mock API function - reemplaza con tu función real
-const fetchInvoices = async (page = 1, pageSize = 20, filters = {}) => {
-  // Simular delay de API
-  await new Promise((resolve) => setTimeout(resolve, 500))
-
-  // Mock response basada en tu estructura de API
-  return {
-    content: [
-      {
-        id: 16,
-        date: "2025-07-17",
-        comment: null,
-        paid: false,
-        status: "QUEUED",
-        createdAt: "2025-07-18T21:45:09.421127Z",
-        client: {
-          id: 3,
-          name: "un nuevo cliente",
-          address: "Av siempreviva 123",
-          phoneNumber: "234234",
-          docType: {
-            code: 96,
-            description: "DNI",
-          },
-          docNumber: 9876668,
-          email: "gulersey@gmail.com",
-          condicionIva: {
-            code: 1,
-            description: "IVA Responsable Inscripto",
-            comprobantesClase: "A/M/C",
-          },
-        },
-        numero: "0001-00000123",
-        total: 3087.32,
-        cae: null,
-        vtoCae: null,
-        sellPoint: 2,
-        comprobante: {
-          code: 1,
-          description: "Factura A",
-        },
-        concepto: {
-          code: 1,
-          description: "Productos",
-        },
-        moneda: {
-          code: "PES",
-          description: "PESO ARGENTINO",
-        },
-        items: [
-          {
-            id: 24,
-            iva: {
-              code: 5,
-              percentage: 21.0,
-              description: "IVA 21%",
-            },
-            invoiceId: 16,
-            productId: 3,
-            pricePerUnit: 850.5,
-            ivaAmount: 178.61,
-            total: 1029.11,
-          },
-        ],
-      },
-    ],
-    pageable: {
-      pageNumber: 0,
-      pageSize: 20,
-      sort: {
-        empty: false,
-        unsorted: false,
-        sorted: true,
-      },
-      offset: 0,
-      unpaged: false,
-      paged: true,
-    },
-    last: true,
-    totalElements: 1,
-    totalPages: 1,
-    size: 20,
-    number: 0,
-    sort: {
-      empty: false,
-      unsorted: false,
-      sorted: true,
-    },
-    first: true,
-    numberOfElements: 1,
-    empty: false,
-  }
-}
+import { fetchInvoices } from "@/lib/invoice/api"
+import { fetchClients } from "@/lib/customer/api"
+import { INVOICE_STATUS_OPTIONS } from "@/lib/invoice/status"
+import InvoiceStatusBadge from "./queue-status-badge"
 
 export default function FacturasListado() {
   const router = useRouter()
   const { toast } = useToast()
   const [loading, setLoading] = useState(true)
   const [invoices, setInvoices] = useState([])
-  const [clients, setClients] = useState(mockClients)
+  const [clients, setClients] = useState([])
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -149,10 +44,7 @@ export default function FacturasListado() {
 
   const fetchInitialData = async () => {
     try {
-      // Aquí cargarías los clientes desde tu API
-      // const clientsData = await fetchClients()
-      // setClients(clientsData)
-      await fetchInvoicesData(1)
+      await fetchInvoicesData()
     } catch (error) {
       toast({
         title: "Error",
@@ -163,10 +55,14 @@ export default function FacturasListado() {
     }
   }
 
-  const fetchInvoicesData = async (page = 1) => {
+  const fetchInvoicesData = async (page = 0) => {
     try {
       setLoading(true)
-      const response = await fetchInvoices(page, 20, filters)
+      const [response, clients] = await Promise.all([
+        fetchInvoices(page, filters),
+        fetchClients(),
+      ])
+      setClients(clients)
       setInvoices(response.content || [])
       setPagination({
         currentPage: response.pageable.pageNumber + 1,
@@ -203,7 +99,7 @@ export default function FacturasListado() {
 
   const applyFilters = () => {
     console.log(filters)
-    fetchInvoicesData(1)
+    fetchInvoicesData()
   }
 
   const clearFilters = () => {
@@ -234,36 +130,24 @@ export default function FacturasListado() {
     return null
   }
 
-  const getStatusBadge = (status, paid) => {
-    if (paid) {
-      return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Pagada</Badge>
-    }
-
-    switch (status) {
-      case "QUEUED":
-        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">En Cola</Badge>
-      case "PENDING":
-        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Pendiente</Badge>
-      case "CANCELLED":
-        return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Cancelada</Badge>
-      default:
-        return <Badge variant="outline">{status}</Badge>
-    }
-  }
-
   const handleInvoiceClick = (invoiceId) => {
-    router.push(`/factura/${invoiceId}`)
+    router.push(`/facturas/${invoiceId}`)
   }
 
   return (
     <div className="min-h-screen p-4 max-w-6xl mx-auto">
-      <Link href="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
+      <Link href="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 my-4">
         <ArrowLeft className="mr-2 h-4 w-4" />
         Volver al menú
       </Link>
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+      <div className="flex justify-between items-center my-3">
         <h1 className="text-2xl font-bold mb-4 sm:mb-0">Listado de Facturas</h1>
+        <Link href="/facturacion">
+          <Button className="bg-green-600 hover:bg-green-700">
+            <Plus className="mr-2 h-4 w-4" /> Nueva factura
+          </Button>
+        </Link>
       </div>
 
       {/* Filters Section */}
@@ -303,7 +187,7 @@ export default function FacturasListado() {
                 <Label htmlFor="statusFilter">Estado</Label>
                 <FormCombo
                   id="statusFilter"
-                  options={statusOptions}
+                  options={INVOICE_STATUS_OPTIONS}
                   placeholder="Todos los estados"
                   onChange={(option) => handleFilterChange("status", option?.id || null)}
                   displayKey="name"
@@ -374,7 +258,7 @@ export default function FacturasListado() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {getStatusBadge(invoice.status, invoice.paid)}
+                      <InvoiceStatusBadge status={invoice.status} paid={invoice.paid}></InvoiceStatusBadge>
                       <Eye className="h-4 w-4 text-gray-400" />
                     </div>
                   </div>

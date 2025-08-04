@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Car, Package, Users, FileText, Settings, Building, BookOpen, Receipt } from "lucide-react"
+import { Car, Package, Users, FileText, Settings, Building, BookOpen, Receipt, TimerReset, } from "lucide-react"
 import ToastHandler from "@/components/toast-handler"
 
 export default function Home() {
@@ -20,7 +20,7 @@ export default function Home() {
             <div className="h-px flex-1 bg-gray-200"></div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-3">
             <Link href="/libros-diarios" className="flex flex-col items-center rounded-lg border bg-white p-6 shadow-sm transition-all hover:shadow-md hover:scale-105">
               <div className="mb-4 rounded-full bg-purple-100 p-3">
                 <BookOpen className="h-8 w-8 text-purple-600" />
@@ -29,12 +29,20 @@ export default function Home() {
               <p className="text-center text-sm text-gray-600">Consulte y gestione los registros contables diarios</p>
             </Link>
 
-            <Link href="/facturacion" className="flex flex-col items-center rounded-lg border bg-white p-6 shadow-sm transition-all hover:shadow-md hover:scale-105">
+            <Link href="/facturas" className="flex flex-col items-center rounded-lg border bg-white p-6 shadow-sm transition-all hover:shadow-md hover:scale-105">
               <div className="mb-4 rounded-full bg-emerald-100 p-3">
                 <Receipt className="h-8 w-8 text-emerald-600" />
               </div>
               <h3 className="mb-2 text-lg font-semibold">Facturación</h3>
-              <p className="text-center text-sm text-gray-600">Genere y gestione sus facturas</p>
+              <p className="text-center text-sm text-gray-600">Gestione sus facturas</p>
+            </Link>
+
+            <Link href="/cola-facturacion" className="flex flex-col items-center rounded-lg border bg-white p-6 shadow-sm transition-all hover:shadow-md hover:scale-105">
+              <div className="mb-4 rounded-full bg-red-100 p-3">
+                <TimerReset className="h-8 w-8 text-red-600" />
+              </div>
+              <h3 className="mb-2 text-lg font-semibold">Cola de facturación</h3>
+              <p className="text-center text-sm text-gray-600">Ver el estado de cada factura en tiempo real</p>
             </Link>
           </div>
         </section>

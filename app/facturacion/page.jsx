@@ -182,9 +182,9 @@ export default function Facturacion() {
 
   return (
     <div className="min-h-screen p-4 max-w-4xl mx-auto">
-      <Link href="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
+      <Link href="/facturas" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
         <ArrowLeft className="mr-2 h-4 w-4" />
-        Volver al menú
+        Volver a facturas
       </Link>
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
