@@ -131,7 +131,7 @@ export default function ProductDetail({ params }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen p-4 flex justify-center items-center">
+      <div className="p-4 max-w-6xl mx-auto">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
       </div>
     )
@@ -139,7 +139,7 @@ export default function ProductDetail({ params }) {
 
   if (!foundProduct) {
     return (
-      <div className="min-h-screen p-4">
+      <div className="p-4 max-w-6xl mx-auto">
         <Link href="/productos" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Volver a productos
@@ -152,13 +152,13 @@ export default function ProductDetail({ params }) {
   }
 
   return (
-    <div className="min-h-screen p-4 max-w-2xl mx-auto">
-      <Link href="/productos" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
+    <div className="p-4 max-w-6xl mx-auto">
+      <Link href="/productos" className="inline-flex items-center text-blue-600 hover:text-blue-800 my-4">
         <ArrowLeft className="mr-2 h-4 w-4" />
         Volver a productos
       </Link>
 
-      <h1 className="text-2xl font-bold mb-6">{isEditing ? "Editar Producto" : "Detalles del Producto"}</h1>
+      <h1 className="text-2xl font-bold my-3">{isEditing ? "Editar Producto" : "Detalles del Producto"}</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">

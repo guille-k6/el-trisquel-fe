@@ -332,8 +332,8 @@ export default function LibroDiarioDetail({ params }) {
   }
 
   return (
-    <div className="min-h-screen p-4 max-w-4xl mx-auto">
-      <Link href="/libros-diarios" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
+    <div className="p-4 max-w-6xl mx-auto">
+      <Link href="/libros-diarios" className="inline-flex items-center text-blue-600 hover:text-blue-800 my-4">
         <ArrowLeft className="mr-2 h-4 w-4" />
         Volver a libros diarios
       </Link>
@@ -343,7 +343,7 @@ export default function LibroDiarioDetail({ params }) {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div className="space-y-2">
-            <Label htmlFor="date">Fecha</Label>
+            <Label htmlFor="date">Fecha de viaje</Label>
             <FormDatePicker
               id="date"
               readOnly={!isEditing}

@@ -176,13 +176,13 @@ export default function ClientDetail({ params }) {
   }
 
   return (
-    <div className="min-h-screen p-4 max-w-2xl mx-auto">
-      <Link href="/clientes" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
+    <div className="p-4 max-w-6xl mx-auto">
+      <Link href="/clientes" className="inline-flex items-center text-blue-600 hover:text-blue-800 my-4">
         <ArrowLeft className="mr-2 h-4 w-4" />
         Volver a clientes
       </Link>
 
-      <h1 className="text-2xl font-bold mb-6">{isEditing ? "Editar Cliente" : "Detalles del Cliente"}</h1>
+      <h1 className="text-2xl font-bold mb-6">{isEditing ? "Editar cliente" : "Detalles del cliente"}</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">

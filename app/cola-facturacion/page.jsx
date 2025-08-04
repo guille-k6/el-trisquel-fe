@@ -106,13 +106,13 @@ export default function Facturacion() {
   }
 
   return (
-    <div className="min-h-screen p-4 max-w-4xl mx-auto">
-      <Link href="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
+    <div className="p-4 max-w-6xl mx-auto">
+      <Link href="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 my-4">
         <ArrowLeft className="mr-2 h-4 w-4" />
-        Menú
+         Volver al inicio
       </Link>
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between my-3">
         <h1 className="text-2xl font-bold mb-4 sm:mb-0">Cola de facturación</h1>
       </div>
 

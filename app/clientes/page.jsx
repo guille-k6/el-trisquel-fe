@@ -10,21 +10,20 @@ export default async function Clientes() {
   const loading = false // TODO: idk
 
   return (
-    <div className="min-h-screen p-4 max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <Link href="/" className="inline-flex items-center text-blue-600 hover:text-blue-800">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Volver al menú
-        </Link>
+    <div className="p-4 max-w-6xl mx-auto">
+      <Link href="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 my-4">
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Volver al inicio
+      </Link>
 
+      <div className="flex justify-between items-center my-3">
+        <h1 className="text-2xl font-bold mb-4 sm:mb-0">Clientes</h1>
         <Link href="/clientes/nuevo">
           <Button className="bg-green-600 hover:bg-green-700">
-            <Plus className="mr-2 h-4 w-4" /> Nuevo Cliente
+            <Plus className="mr-2 h-4 w-4" /> Nuevo cliente
           </Button>
         </Link>
       </div>
-
-      <h1 className="text-2xl font-bold mb-6">Gestión de clientes</h1>
 
       {loading ? (
         <div className="flex justify-center py-10">

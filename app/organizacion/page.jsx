@@ -106,7 +106,7 @@ export default function Organization() {
 
   if (loading) {
     return (
-      <div className="min-h-screen p-4 max-w-4xl mx-auto">
+      <div className="p-4 max-w-6xl mx-auto">
         <div className="flex justify-center items-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
         </div>
@@ -115,13 +115,13 @@ export default function Organization() {
   }
 
   return (
-    <div className="min-h-screen p-4 max-w-4xl mx-auto">
-      <Link href="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
+    <div className="p-4 max-w-6xl mx-auto">
+      <Link href="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 my-4">
         <ArrowLeft className="mr-2 h-4 w-4" />
         Volver al inicio
       </Link>
 
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 my-3">
         <Building className="h-8 w-8 text-gray-600" />
         <h1 className="text-2xl font-bold">Configuración General</h1>
       </div>

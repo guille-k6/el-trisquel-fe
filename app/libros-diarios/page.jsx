@@ -11,21 +11,20 @@ export default async function LibrosDiarios() {
   const loading = false // TODO: idk
 
   return (
-    <div className="min-h-screen p-4 max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <Link href="/" className="inline-flex items-center text-blue-600 hover:text-blue-800">
+    <div className="p-4 max-w-6xl mx-auto">
+        <Link href="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 my-4">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Volver al menú
+          Volver al inicio
         </Link>
 
+      <div className="flex justify-between items-center my-4">
+        <h1 className="text-2xl font-bold mb-4 sm:mb-0">Libros Diarios</h1>
         <Link href="/libros-diarios/nuevo">
           <Button className="bg-green-600 hover:bg-green-700">
-            <Plus className="mr-2 h-4 w-4" /> Nuevo Libro Diario
+            <Plus className="mr-2 h-4 w-4" /> Nuevo libro diario
           </Button>
         </Link>
       </div>
-
-      <h1 className="text-2xl font-bold mb-6">Gestión de Libros Diarios</h1>
 
       {loading ? (
         <div className="flex justify-center py-10">

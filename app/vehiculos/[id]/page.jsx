@@ -131,24 +131,24 @@ export default function VehicleDetail({ params }) {
 
   if (!foundVehicle) {
     return (
-      <div className="min-h-screen p-4 flex justify-center items-center">
+      <div className="p-4 max-w-6xl mx-auto">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen p-4 max-w-2xl mx-auto">
-      <Link href="/vehiculos" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
+    <div className="p-4 max-w-6xl mx-auto">
+      <Link href="/vehiculos" className="inline-flex items-center text-blue-600 hover:text-blue-800 my-4">
         <ArrowLeft className="mr-2 h-4 w-4" />
         Volver a vehículos
       </Link>
 
-      <h1 className="text-2xl font-bold mb-6">{isEditing ? "Editar Vehículo" : "Detalles del Vehículo"}</h1>
+      <h1 className="text-2xl font-bold my-3">{isEditing ? "Editar Vehículo" : "Detalles del Vehículo"}</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="name">Nombre del Vehículo</Label>
+          <Label htmlFor="name">Nombre del vehículo</Label>
           <FormTextInput
             id="name"
             readOnly={!isEditing}

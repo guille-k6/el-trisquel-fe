@@ -111,7 +111,7 @@ export default function InvoiceDetail({ params }) {
                </div>)
     }
   return (
-    <div className="min-h-screen p-4 max-w-6xl mx-auto">
+    <div className="p-4 max-w-6xl mx-auto">
       <Link href="/facturas" className="inline-flex items-center text-blue-600 hover:text-blue-800 my-4">
         <ArrowLeft className="mr-2 h-4 w-4" />
         Volver a facturas
@@ -203,14 +203,12 @@ export default function InvoiceDetail({ params }) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label className="text-xs text-gray-500 uppercase tracking-wide flex items-center gap-1">
-                      <Mail className="h-3 w-3" />
                       Email
                     </Label>
                     <p className="font-medium">{invoice.client.email}</p>
                   </div>
                   <div>
                     <Label className="text-xs text-gray-500 uppercase tracking-wide flex items-center gap-1">
-                      <Phone className="h-3 w-3" />
                       Teléfono
                     </Label>
                     <p className="font-medium">{invoice.client.phoneNumber}</p>
@@ -218,7 +216,6 @@ export default function InvoiceDetail({ params }) {
                 </div>
                 <div>
                   <Label className="text-xs text-gray-500 uppercase tracking-wide flex items-center gap-1">
-                    <MapPin className="h-3 w-3" />
                     Dirección
                   </Label>
                   <p className="font-medium">{invoice.client.address}</p>
@@ -226,7 +223,6 @@ export default function InvoiceDetail({ params }) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label className="text-xs text-gray-500 uppercase tracking-wide flex items-center gap-1">
-                      <Hash className="h-3 w-3" />
                       Documento
                     </Label>
                     <p className="font-medium">
@@ -235,7 +231,6 @@ export default function InvoiceDetail({ params }) {
                   </div>
                   <div>
                     <Label className="text-xs text-gray-500 uppercase tracking-wide flex items-center gap-1">
-                      <Building className="h-3 w-3" />
                       Condición IVA
                     </Label>
                     <p className="font-medium">{invoice.client.condicionIva.description}</p>

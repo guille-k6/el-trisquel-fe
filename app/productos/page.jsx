@@ -9,21 +9,21 @@ export default async function Productos() {
   const products = await fetchProducts()
 
   return (
-    <div className="min-h-screen p-4 max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <Link href="/" className="inline-flex items-center text-blue-600 hover:text-blue-800">
+    <div className="p-4 max-w-6xl mx-auto">
+        <Link href="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 my-4">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Volver al menú
         </Link>
 
-        <Link href="/productos/nuevo">
-          <Button className="bg-green-600 hover:bg-green-700">
-            <Plus className="mr-2 h-4 w-4" /> Nuevo Producto
-          </Button>
-        </Link>
-      </div>
+        <div className="flex justify-between items-center my-3">
+          <h1 className="text-2xl font-bold mb-6">Gestión de productos</h1>
+          <Link href="/productos/nuevo">
+            <Button className="bg-green-600 hover:bg-green-700">
+              <Plus className="mr-2 h-4 w-4" /> Nuevo Producto
+            </Button>
+          </Link>
+        </div>
 
-      <h1 className="text-2xl font-bold mb-6">Gestión de productos</h1>
 
       {products.length === 0 ? (
         <div className="text-center py-10 bg-gray-50 rounded-lg">

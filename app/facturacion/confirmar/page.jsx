@@ -197,7 +197,7 @@ export default function BillingConfirmationPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="p-4 max-w-6xl mx-auto">
         <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mb-4"></div>
         <p className="text-gray-600 text-lg">Cargando información...</p>
       </div>
@@ -206,7 +206,7 @@ export default function BillingConfirmationPage() {
 
   if (itemIds.length === 0 || items.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="p-4 max-w-6xl mx-auto">
         <div className="container mx-auto px-4 py-8 max-w-4xl">
           <Link
             href="/facturacion"
@@ -229,11 +229,10 @@ export default function BillingConfirmationPage() {
   }
 
   return (
-    <div className="min-h-screen">
-      <div className="container mx-auto px-4 py-6 max-w-7xl">
+      <div className="p-4 max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <Link href="/facturacion" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6 transition-colors group">
+          <Link href="/facturacion" className="inline-flex items-center text-blue-600 hover:text-blue-800 my-4">
             <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
             Volver a facturación
           </Link>
@@ -245,7 +244,7 @@ export default function BillingConfirmationPage() {
             </div>
             <Badge variant="secondary" className="text-base px-4 py-2 w-fit">
               <Package className="mr-2 h-4 w-4" />
-              {items.length} items seleccionados
+              {items.length} {items.length > 1 ? `items seleccionado` : `item seleccionado`}
             </Badge>
           </div>
         </div>
@@ -440,8 +439,6 @@ export default function BillingConfirmationPage() {
           </Card>
       </div>
 
-      <ObjectViewer data={productPricing}></ObjectViewer>
-
           {/* RESUMEN */}
           <div className="space-y-6">
             <InvoiceSummary productPricing={productPricing} ivas={ivas}/>
@@ -491,6 +488,5 @@ export default function BillingConfirmationPage() {
           </div>
         </div>
       </div>
-    </div>
   )
 }

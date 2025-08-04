@@ -80,20 +80,20 @@ import { useRouter } from "next/navigation"
 
   
     return (
-      <div className="min-h-screen p-4 max-w-6xl mx-auto">
+      <div className="p-4 max-w-6xl mx-auto">
         <Link href="/cola-facturacion" className="inline-flex items-center text-blue-600 hover:text-blue-800 my-4">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Cola de facturación
         </Link>
   
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-2 my-3">
+          <div className="flex items-center gap-2">
             <FileText className="h-8 w-8 text-blue-600" />
             <div>
               <h1 className="text-3xl font-bold">#{queueItem.id} Solicitud de facturación</h1>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center">
             <InvoiceStatusBadge status={queueItem.status} />
           </div>
         </div>
