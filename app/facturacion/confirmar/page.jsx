@@ -208,10 +208,7 @@ export default function BillingConfirmationPage() {
     return (
       <div className="p-4 max-w-6xl mx-auto">
         <div className="container mx-auto px-4 py-8 max-w-4xl">
-          <Link
-            href="/facturacion"
-            className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-8 transition-colors"
-          >
+          <Link href="/facturacion" className="inline-flex items-center text-blue-600 hover:text-blue-800 my-3 transition-colors">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Volver a facturación
           </Link>
@@ -231,70 +228,43 @@ export default function BillingConfirmationPage() {
   return (
       <div className="p-4 max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
+        <div className="my-3">
           <Link href="/facturacion" className="inline-flex items-center text-blue-600 hover:text-blue-800 my-4">
             <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
             Volver a facturación
           </Link>
-
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Confirmar Facturación</h1>
-              <p className="text-gray-600">Revisa y confirma los detalles antes de generar la factura</p>
-            </div>
-            <Badge variant="secondary" className="text-base px-4 py-2 w-fit">
-              <Package className="mr-2 h-4 w-4" />
-              {items.length} {items.length > 1 ? `items seleccionado` : `item seleccionado`}
-            </Badge>
-          </div>
         </div>
 
-        <div className="space-y-12">
+        <div className="space-y-6">
           <InvoiceInformation items={items} client={client} />
 
-          {/* SECCIÓN 2: CONFIGURACIÓN */}
           <div className="space-y-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-orange-100 p-3 rounded-xl">
-                <Settings className="h-6 w-6 text-orange-600" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">Configuración</h2>
-                <p className="text-gray-600">Fecha de factura y precios de productos</p>
-              </div>
-            </div>
-
           <Card className="border-gray-200 shadow-lg bg-white/80 backdrop-blur-sm">
             <CardHeader className="pb-4">
-                <CardTitle className="text-xl text-gray-900">Ingresar fecha, precio y cantidades a facturar</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xl text-gray-900">Configuración de precios</CardTitle>
+                <Badge variant="secondary" className="text-base px-4 py-2 w-fit">
+                  <Package className="mr-2 h-4 w-4" />
+                  {items.length} {items.length > 1 ? `items seleccionado` : `item seleccionado`}
+                </Badge>
+              </div>
             </CardHeader>
             <CardContent className="space-y-8">
               {/* Sección de Fecha de Factura */}
               <div className="space-y-4">
-                <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
-                  <div className="bg-blue-100 p-2 rounded-lg">
-                    <Calendar className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">Fecha de factura</h3>
-                    <p className="text-sm text-gray-600">Selecciona la fecha para esta factura</p>
+                <div className="flex items-center gap-3 pb-4">
+                  <div className="space-y-2 w-full">
+                    <Label htmlFor="dateTo">Fecha de factura</Label>
+                    <FormDatePicker id="date" onChange={(e) => setDate(e.target.value)} value={date} required className="w-full"/>
                   </div>
                 </div>
-                <FormDatePicker id="date" onChange={(e) => setDate(e.target.value)} value={date} required />
               </div>
 
               {/* Sección de Configuración de Precios */}
               <div className="space-y-6">
-                <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
-                  <div className="bg-orange-100 p-2 rounded-lg">
-                    <DollarSign className="h-5 w-5 text-orange-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900">Configuración de Precios</h3>
-                </div>
-
                 {/* Product Pricing */}
                 <div className="space-y-6">
-                  <h4 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <h4 className="text-lg font-semibold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-4">
                     <Calculator className="h-5 w-5 text-gray-600" />
                     Precio por Producto
                   </h4>
@@ -394,21 +364,14 @@ export default function BillingConfirmationPage() {
                   {/* Historical Prices */}
                   {priceHistory.length > 0 && (
                     <div className="bg-blue-50 rounded-xl p-6 border border-blue-200">
-                      <Button
-                        variant="outline"
-                        onClick={() => setShowHistory(!showHistory)}
-                        className="mb-4 bg-white hover:bg-blue-50 border-blue-200"
-                      >
+                      <Button variant="outline" onClick={() => setShowHistory(!showHistory)} className="mb-4 bg-white hover:bg-blue-50 border-blue-200">
                         {showHistory ? <EyeOff className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4" />}
                         {showHistory ? "Ocultar" : "Ver"} Historial de Precios
                       </Button>
                       {showHistory && (
                         <div className="space-y-3 max-h-60 overflow-y-auto">
                           {priceHistory.map((record, index) => (
-                            <div
-                              key={index}
-                              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-white rounded-lg border border-blue-200 hover:shadow-md transition-shadow"
-                            >
+                            <div key={index} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-white rounded-lg border border-blue-200 hover:shadow-md transition-shadow">
                               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                                 <span className="text-sm font-medium text-gray-600">{record.date}</span>
                                 <Badge variant="outline" className="text-xs w-fit bg-blue-50 text-blue-700 border-blue-200">
@@ -417,12 +380,7 @@ export default function BillingConfirmationPage() {
                               </div>
                               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                                 <span className="font-bold text-lg text-gray-900">{formatPrice(record.pricePerLiter)}/L</span>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => applyHistoricalPrice(record.pricePerLiter)}
-                                  className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 font-medium"
-                                >
+                                <Button variant="ghost" size="sm" onClick={() => applyHistoricalPrice(record.pricePerLiter)} className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 font-medium">
                                   <TrendingUp className="mr-1 h-3 w-3" />
                                   Aplicar a todos
                                 </Button>

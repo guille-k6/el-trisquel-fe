@@ -48,7 +48,7 @@ const DialogContent = React.forwardRef(({ className, children, ...props }, ref) 
 DialogContent.displayName = "DialogContent"
 
 const DialogHeader = ({ className, ...props }) => (
-  <div className={cn("flex flex-col space-y-1.5 text-center sm:text-left px-6 py-4 border-b", className)} {...props} />
+  <div className={cn("flex flex-col space-y-1.5 text-center sm:text-left px-6 py-4 pb-3 border-b border-gray-200 mb-4", className)} {...props} />
 )
 DialogHeader.displayName = "DialogHeader"
 
@@ -61,7 +61,7 @@ const DialogClose = React.forwardRef(({ className, ...props }, ref) => (
   <button
     ref={ref}
     className={cn(
-      "absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none",
+      "absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none cursor-pointer",
       className,
     )}
     {...props}

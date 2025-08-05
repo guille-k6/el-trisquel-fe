@@ -74,20 +74,20 @@ export default function InvoiceDetail({ params }) {
     }, [])
 
     const fetchInitialData = async (id) => {
-        try {
+      try {
         setLoading(true)
         const response = await fetchInvoiceById(id)
         setInvoice(response)
-        } catch (error) {
-            toast({
-                title: "Error",
-                description: error.message || "Error al cargar la factura",
-                type: "error",
-                duration: 8000,
-            })
-        } finally {
-            setLoading(false)
-        }
+      } catch (error) {
+        toast({
+            title: "Error",
+            description: error.message || "Error al cargar la factura",
+            type: "error",
+            duration: 8000,
+        })
+      } finally {
+          setLoading(false)
+      }
     }
 
     // Calculate totals
@@ -317,7 +317,7 @@ export default function InvoiceDetail({ params }) {
           {/* Queue Record Button */}
           <Button onClick={() => setIsModalOpen(true)} className="w-full bg-blue-600 hover:bg-blue-700">
             <Eye className="mr-2 h-4 w-4" />
-            Ver Registro de Cola
+            Registro de facturación
           </Button>
 
           {/* Administrative Info */}

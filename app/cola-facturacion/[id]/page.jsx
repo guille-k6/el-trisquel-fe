@@ -310,10 +310,10 @@ import { useRouter } from "next/navigation"
                   </Button>
                 </Link>
                 {queueItem.generatedBy && (
-                  <Link href={`/invoice-queue/${queueItem.generatedBy}`}>
+                  <Link href={`/cola-facturacion/${queueItem.generatedBy}`}>
                     <Button className="w-full bg-transparent my-2" variant="outline">
                       <LinkIcon className="mr-2 h-4 w-4" />
-                      Ver Cola Origen
+                      Ver instancia origen
                     </Button>
                   </Link>
                 )}

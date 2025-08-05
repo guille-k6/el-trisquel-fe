@@ -21,7 +21,7 @@ export default function InvoiceInformation({ items, client }) {
         {/* Combined Card with Sections */}
         <Card className="border-gray-200 shadow-lg bg-white/80 backdrop-blur-sm">
           <CardHeader className="pb-4">
-            <CardTitle className="text-xl text-gray-900">Detalles de la Factura</CardTitle>
+            <CardTitle className="text-xl text-gray-900">Encabezado de factura</CardTitle>
           </CardHeader>
           <CardContent className="space-y-8">
             {/* Client Information Section */}

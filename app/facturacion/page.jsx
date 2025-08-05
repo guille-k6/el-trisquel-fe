@@ -27,10 +27,10 @@ export default function Facturacion() {
   const [selectedClientId, setSelectedClientId] = useState(null)
   const [selectedClientName, setSelectedClientName] = useState("")
   const [pagination, setPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
-    totalItems: 0,
-    pageSize: 10,
+    currentPage: '',
+    totalPages: '',
+    totalItems: '',
+    pageSize: '',
     hasNextPage: false,
     hasPreviousPage: false,
   })
@@ -44,7 +44,7 @@ export default function Facturacion() {
     try {
       const clientsData = await fetchClients()
       setClients(clientsData)
-      await fetchItems(1)
+      await fetchItems()
     } catch (error) {
       toast({
         title: "Error",
@@ -55,18 +55,18 @@ export default function Facturacion() {
     }
   }
 
-  const fetchItems = async (page = 1) => {
+  const fetchItems = async (page = 0) => {
     try {
       setLoading(true)
-      const response = await fetchInvoiceableDailyBookItems(page, 30, filters.dateFrom, filters.dateTo, filters.clientId)
+      const response = await fetchInvoiceableDailyBookItems(page, filters)
       setDailyBookItems(response.content || [])
       setPagination({
-        currentPage: response.pageable.pageNumber + 1,
+        currentPage: response.pageable.pageNumber,
         totalPages: response.totalPages,
         totalItems: response.totalElements,
         pageSize: response.size,
         hasNextPage: response.last === false,
-        hasPreviousPage: response.pageable.pageNumber > 0,
+        hasPreviousPage: response.pageable.pageNumber >= 0,
       })     
     } catch (error) {
       toast({
