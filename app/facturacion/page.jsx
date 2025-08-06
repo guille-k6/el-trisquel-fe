@@ -188,15 +188,12 @@ export default function Facturacion() {
       </Link>
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between my-3">
-        <h1 className="text-2xl font-bold mb-4 sm:mb-0">Facturación</h1>
+        <h1 className="text-2xl font-bold mb-4 sm:mb-0">Crear factura</h1>
 
         {selectedItems.length > 0 && (
           <div className="flex flex-col sm:flex-row gap-2">
             <Badge variant="secondary" className="text-sm">
-              {selectedItems.length} items seleccionados
-            </Badge>
-            <Badge variant="outline" className="text-sm">
-              {selectedClientName}
+              {selectedItems.length === 1 ? `${selectedItems.length} item seleccionado` : `${selectedItems.length} items seleccionados`}
             </Badge>
           </div>
         )}
@@ -275,8 +272,7 @@ export default function Facturacion() {
         <div className="mb-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200 flex items-center gap-2">
           <AlertTriangle className="h-4 w-4 text-yellow-600" />
           <p className="text-sm text-yellow-800">
-            Solo puedes seleccionar items del mismo cliente. Seleccionar un item de otro cliente eliminará la selección
-            actual.
+            Solo podes seleccionar items que pertenezcan al mismo cliente.
           </p>
         </div>
       )}

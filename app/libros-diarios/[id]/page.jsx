@@ -7,7 +7,7 @@ import { fetchDailyBookById, deleteDailyBook, postNewDailyBook, fetchLatestVouch
 import { fetchVehicles } from "@/lib/vehicle/api"
 import { fetchProducts } from "@/lib/product/api"
 import { fetchClients } from "@/lib/customer/api"
-import { ArrowLeft, Save, Edit, X, Plus } from "lucide-react"
+import { ArrowLeft, Save, Edit, X, Plus, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { DeleteWithModal } from "@/components/ui/delete-with-modal"
@@ -641,6 +641,16 @@ export default function LibroDiarioDetail({ params }) {
                           min="0" max="9999999"
                         />
                       </div>
+
+                      {item.invoice && (
+                      <div className="space-y-2">
+                        <Label htmlFor={`item-invoice-${index}`} className="text-xs text-gray-500 uppercase tracking-wide">N° Factura imputada</Label>
+                        <Link href={`/facturas/${item.invoice}`} className="font-medium text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1">
+                          Factura #{item.invoice}
+                          <ExternalLink className="h-3 w-3" />
+                        </Link>
+                      </div>
+                      )}
 
                       <div className="space-y-2 md:col-span-2">
                         <Label htmlFor={`item-observations-${index}`}>Observaciones</Label>

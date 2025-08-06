@@ -169,15 +169,15 @@ export default function BillingConfirmationPage() {
       invoiceItems: items.map((item) => {
         const pricing = productPricing[item.product.id]
         return {
-          productId: item.product.id,
+          product: {
+            id: item.product.id,
+          },
           amount: item.amount,
           pricePerUnit: pricing.unitPrice,
           iva: pricing.iva,
         }
       }),
     }
-
-    console.log("Invoice Information:", invoiceInformation)
 
     setGenerating(true)
     try {
