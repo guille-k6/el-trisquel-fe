@@ -20,49 +20,43 @@ export default function InvoiceInformation({ items, client }) {
   
         {/* Combined Card with Sections */}
         <Card className="border-gray-200 shadow-lg bg-white/80 backdrop-blur-sm">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl text-gray-900">Encabezado de factura</CardTitle>
-          </CardHeader>
           <CardContent className="space-y-8">
             {/* Client Information Section */}
-            <div className="space-y-4">
+            <div className="space-y-4 mt-4">
               <div className="flex items-center gap-3">
                 <div className="bg-green-100 p-2 rounded-lg">
                   <User className="h-5 w-5 text-green-600" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900">Información del Cliente</h3>
-              </div>
-  
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <Label className="text-xs text-gray-500 uppercase tracking-wide font-medium">Razón Social</Label>
+                <div>
                   <p className="font-semibold text-lg text-gray-900">{client.name}</p>
                 </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pl-6">
                 <div className="space-y-2">
-                  <Label className="text-xs text-gray-500 uppercase tracking-wide font-medium">Teléfono</Label>
-                  <p className="font-medium text-gray-700">{client.phoneNumber || "No especificado"}</p>
+                  <Label className="text-xs text-gray-500 uppercase tracking-wide font-medium">Documento</Label>
+                  <p className="font-semibold">{`${client.docType.description}:` || "No especificado"} <span className="font-medium text-gray-700">{client.docNumber || "No especificado"}</span></p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-gray-500 uppercase tracking-wide font-medium">Condición IVA</Label>
+                  <p className="font-semibold">{client.condicionIva.description}</p>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs text-gray-500 uppercase tracking-wide font-medium">Email</Label>
                   <p className="font-medium text-gray-700">{client.email || "No especificado"}</p>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs text-gray-500 uppercase tracking-wide font-medium">Tipo de Documento</Label>
-                  <p className="font-medium text-gray-700">{client.docType.description || "No especificado"}</p>
+                  <Label className="text-xs text-gray-500 uppercase tracking-wide font-medium">Dirección</Label>
+                  <p className="font-medium text-gray-700">{client.address}</p>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs text-gray-500 uppercase tracking-wide font-medium">Número de Documento</Label>
-                  <p className="font-medium text-gray-700">{client.docNumber || "No especificado"}</p>
+                  <Label className="text-xs text-gray-500 uppercase tracking-wide font-medium">Teléfono</Label>
+                  <p className="font-medium text-gray-700">{client.phoneNumber || "No especificado"}</p>
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs text-gray-500 uppercase tracking-wide font-medium">Dirección</Label>
-                <p className="text-gray-700 bg-gray-50 p-3 rounded-lg border border-gray-200">{client.address}</p>
               </div>
             </div>
   
             {/* Separator between sections */}
-            <Separator className="my-6" />
+            <Separator className="my-3" />
   
             {/* Items Section */}
             <div className="space-y-4">
@@ -75,10 +69,7 @@ export default function InvoiceInformation({ items, client }) {
   
               <div className="space-y-6">
                 {items.map((item, index) => (
-                  <div
-                    key={item.id}
-                    className="border border-gray-200 rounded-xl p-6 hover:border-gray-300 transition-colors"
-                  >
+                  <div key={item.id} className="border border-gray-200 rounded-xl p-6 hover:border-gray-300 transition-colors">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                       <div className="space-y-1">
                         <Label className="text-xs text-gray-500 uppercase tracking-wide font-medium">Fecha</Label>

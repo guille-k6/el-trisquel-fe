@@ -20,14 +20,7 @@ import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
 import ObjectViewer from "@/components/object-viewer"
 import InvoiceSummary from "./invoice-summary"
 import InvoiceInformation from "./invoice-information"
-
-const mockPriceHistory = [
-  { date: "2024-01-10", pricePerLiter: 850.5, totalAmount: 127575.0, itemsCount: 3 },
-  { date: "2024-01-05", pricePerLiter: 845.0, totalAmount: 84500.0, itemsCount: 2 },
-  { date: "2023-12-28", pricePerLiter: 840.25, totalAmount: 168050.0, itemsCount: 4 },
-  { date: "2023-12-20", pricePerLiter: 835.75, totalAmount: 125362.5, itemsCount: 3 },
-  { date: "2023-12-15", pricePerLiter: 830.0, totalAmount: 99600.0, itemsCount: 2 },
-]
+import PriceSuggestion from "./price-suggestion"
 
 const formatPrice = (price) => {
   return new Intl.NumberFormat("es-AR", {
@@ -45,11 +38,11 @@ export default function BillingConfirmationPage() {
   const [generating, setGenerating] = useState(false)
   const [items, setItems] = useState([])
   const [client, setClient] = useState(null)
-  const [priceHistory, setPriceHistory] = useState([])
-  const [showHistory, setShowHistory] = useState(false)
   const [productPricing, setProductPricing] = useState({})
   const [date, setDate] = useState()
   const [ivas, setIvas] = useState([])
+  const [priceModalOpen, setPriceModalOpen] = useState(false)
+  const [selectedProductId, setSelectedProductId] = useState(null)
 
   // Get item IDs from URL
   const itemIds = searchParams.get("items")?.split(",").map((id) => Number.parseInt(id)) || []
@@ -73,7 +66,6 @@ export default function BillingConfirmationPage() {
       const searchedItems = await fetchDailyBookItemsInIds(searchParams.get("items"))
       setItems(searchedItems)
       setClient(searchedItems[0].client)
-      setPriceHistory(mockPriceHistory)
       const ivas = await fetchIvas()
       setIvas(ivas)
       initializeProductPricing(searchedItems, ivas)
@@ -82,10 +74,12 @@ export default function BillingConfirmationPage() {
       console.log(error)
       toast({
         title: "Error",
-        description: error.data || "Ocurrió un error al cargar los datos",
+        description: error.message || "Ocurrió un error al cargar los datos",
         type: "error",
         duration: 8000,
       })
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -99,7 +93,7 @@ export default function BillingConfirmationPage() {
           id: productId,
           name: productName,
           totalQuantity: 0,
-          unitPrice: mockPriceHistory.length > 0 ? mockPriceHistory[0].pricePerLiter : 0,
+          unitPrice: 0,
           iva: ivaList.default.code,
         }
       }
@@ -121,14 +115,6 @@ export default function BillingConfirmationPage() {
     }))
   }
 
-  const applyHistoricalPrice = (price) => {
-    const updatedPricing = { ...productPricing }
-    Object.keys(updatedPricing).forEach((productId) => {
-      updatedPricing[productId].unitPrice = price
-    })
-    setProductPricing(updatedPricing)
-  }
-
   const calculateSubtotal = (productId) => {
       const product = productPricing[productId]
       if (!product) return 0
@@ -140,6 +126,17 @@ export default function BillingConfirmationPage() {
     const product = productPricing[productId]
     const associatedIva = ivas.elements.find((iva) => iva.code === product.iva);
     return subtotal + (subtotal * associatedIva.percentage) / 100;
+  }
+
+  const handleOpenPriceModal = (productId) => {
+    setSelectedProductId(productId)
+    setPriceModalOpen(true)
+  }
+
+  const handleSelectPrice = (price) => {
+    if (selectedProductId) {
+      updateProductPricing(selectedProductId, "unitPrice", price.toString())
+    }
   }
 
   const handleGenerateInvoice = async () => {
@@ -271,16 +268,15 @@ export default function BillingConfirmationPage() {
                   <div className="space-y-4">
                     {Object.values(productPricing).map((product) => (
                       <Card key={product.id} className="border-l-4 border-l-blue-500 border-gray-200">
-                        <CardContent className="p-6">
+                        <CardHeader className="py-0 pt-4 my-0">
+                          <div className="flex items-center gap-1">
+                            <Package className="h-5 w-5 text-gray-600" />
+                            <div className="text-m font-medium text-gray-600">{product.name}</div>
+
+                          </div>
+                        </CardHeader>
+                        <CardContent className="p-6 pt-3">
                           <div className="grid grid-cols-1 lg:grid-cols-6 gap-4">
-                            <div className="lg:col-span-1">
-                              <Label className="text-xs text-gray-500 uppercase tracking-wide font-medium">Producto</Label>
-                              <FormTextInput
-                                readOnly={true}
-                                value={product.name}
-                                className="font-semibold text-sm bg-white border-gray-200 text-gray-900 mt-1"
-                              />
-                            </div>
                             <div>
                               <Label
                                 htmlFor={`quantity-${product.id}`}
@@ -356,48 +352,31 @@ export default function BillingConfirmationPage() {
                                 className="mt-1 bg-green-50 border-green-200 text-green-800 font-bold"
                               />
                             </div>
+                            <div>
+                              <Label className="text-xs text-gray-500 uppercase tracking-wide font-medium">
+                                Sugerir precios
+                                </Label>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleOpenPriceModal(product.id)}
+                                className="border-blue-500 text-blue-600 hover:bg-blue-50 w-full"
+                                title="Ver precios anteriores">
+                                <DollarSign className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
                     ))}
                   </div>
-                  {/* Historical Prices */}
-                  {priceHistory.length > 0 && (
-                    <div className="bg-blue-50 rounded-xl p-6 border border-blue-200">
-                      <Button variant="outline" onClick={() => setShowHistory(!showHistory)} className="mb-4 bg-white hover:bg-blue-50 border-blue-200">
-                        {showHistory ? <EyeOff className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4" />}
-                        {showHistory ? "Ocultar" : "Ver"} Historial de Precios
-                      </Button>
-                      {showHistory && (
-                        <div className="space-y-3 max-h-60 overflow-y-auto">
-                          {priceHistory.map((record, index) => (
-                            <div key={index} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-white rounded-lg border border-blue-200 hover:shadow-md transition-shadow">
-                              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                                <span className="text-sm font-medium text-gray-600">{record.date}</span>
-                                <Badge variant="outline" className="text-xs w-fit bg-blue-50 text-blue-700 border-blue-200">
-                                  {record.itemsCount} items
-                                </Badge>
-                              </div>
-                              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                                <span className="font-bold text-lg text-gray-900">{formatPrice(record.pricePerLiter)}/L</span>
-                                <Button variant="ghost" size="sm" onClick={() => applyHistoricalPrice(record.pricePerLiter)} className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 font-medium">
-                                  <TrendingUp className="mr-1 h-3 w-3" />
-                                  Aplicar a todos
-                                </Button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
               </div>
             </CardContent>
           </Card>
       </div>
 
-          {/* RESUMEN */}
           <div className="space-y-6">
             <InvoiceSummary productPricing={productPricing} ivas={ivas}/>
             {/* Action Buttons */}
@@ -443,6 +422,16 @@ export default function BillingConfirmationPage() {
                 </AlertDescription>
               </Alert>
             )}
+
+            <ObjectViewer data={client}></ObjectViewer>
+
+            <PriceSuggestion
+              isOpen={priceModalOpen}
+              onClose={() => setPriceModalOpen(false)}
+              productId={selectedProductId}
+              clientId={client.id}
+              onSelectPrice={handleSelectPrice}
+            />
           </div>
         </div>
       </div>
