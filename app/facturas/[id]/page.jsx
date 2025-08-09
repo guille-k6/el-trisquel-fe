@@ -267,6 +267,10 @@ export default function InvoiceDetail({ params }) {
                           <p className="font-medium">{formatPrice(item.pricePerUnit)}</p>
                         </div>
                         <div className="text-center sm:text-right">
+                          <Label className="text-xs text-gray-500 uppercase tracking-wide">TOTAL NETO</Label>
+                          <p className="font-medium">{formatPrice(item.pricePerUnit * item.amount)}</p>
+                        </div>
+                        <div className="text-center sm:text-right">
                           <Label className="text-xs text-gray-500 uppercase tracking-wide">{item.iva.description}</Label>
                           <p className="font-medium">{formatPrice(item.ivaAmount)}</p>
                         </div>

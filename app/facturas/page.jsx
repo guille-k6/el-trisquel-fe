@@ -16,6 +16,8 @@ import { fetchInvoices } from "@/lib/invoice/api"
 import { fetchClients } from "@/lib/customer/api"
 import { INVOICE_STATUS_OPTIONS } from "@/lib/invoice/status"
 import InvoiceStatusBadge from "./queue-status-badge"
+import ObjectViewer from "@/components/object-viewer"
+import SmartPagination from "@/components/ui/smart-pagination"
 
 export default function FacturasListado() {
   const router = useRouter()
@@ -24,12 +26,10 @@ export default function FacturasListado() {
   const [invoices, setInvoices] = useState([])
   const [clients, setClients] = useState([])
   const [pagination, setPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
-    totalItems: 0,
-    pageSize: 20,
-    hasNextPage: false,
-    hasPreviousPage: false,
+    size: 0,
+    number: 0,
+    totalElements: 0,
+    totalPages: 0,
   })
   const [filters, setFilters] = useState({
     dateFrom: "",
@@ -39,21 +39,8 @@ export default function FacturasListado() {
   })
 
   useEffect(() => {
-    fetchInitialData()
+    fetchInvoicesData()
   }, [])
-
-  const fetchInitialData = async () => {
-    try {
-      await fetchInvoicesData()
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error.message || "Error al cargar los datos iniciales",
-        type: "error",
-        duration: 8000,
-      })
-    }
-  }
 
   const fetchInvoicesData = async (page = 0) => {
     try {
@@ -64,14 +51,7 @@ export default function FacturasListado() {
       ])
       setClients(clients)
       setInvoices(response.content || [])
-      setPagination({
-        currentPage: response.pageable.pageNumber + 1,
-        totalPages: response.totalPages,
-        totalItems: response.totalElements,
-        pageSize: response.size,
-        hasNextPage: response.last === false,
-        hasPreviousPage: response.pageable.pageNumber > 0,
-      })
+      setPagination(response.page)
     } catch (error) {
       toast({
         title: "Error",
@@ -85,7 +65,7 @@ export default function FacturasListado() {
   }
 
   const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= pagination.totalPages) {
+    if (newPage >= 0 && newPage <= pagination.totalPages) {
       fetchInvoicesData(newPage)
     }
   }
@@ -228,10 +208,10 @@ export default function FacturasListado() {
           {/* Results Summary */}
           <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <p className="text-sm text-gray-600">
-              Mostrando {invoices.length} de {pagination.totalItems} facturas
+              Mostrando {invoices.length} de {pagination.totalElements} facturas
             </p>
             <p className="text-sm text-gray-600">
-              Página {pagination.currentPage} de {pagination.totalPages}
+              Página {pagination.number + 1} de {pagination.totalPages}
             </p>
           </div>
 
@@ -308,15 +288,8 @@ export default function FacturasListado() {
               </Card>
             ))}
           </div>
-
           {pagination.totalPages > 1 && (
-            <Pagination
-              currentPage={pagination.currentPage}
-              totalPages={pagination.totalPages}
-              hasPreviousPage={pagination.hasPreviousPage}
-              hasNextPage={pagination.hasNextPage}
-              onPageChange={handlePageChange}
-            />
+            <SmartPagination page={pagination} onPageClick={handlePageChange}/>
           )}
         </>
       )}
