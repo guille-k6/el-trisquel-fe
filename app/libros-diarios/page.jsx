@@ -1,14 +1,66 @@
+"use client"
+
 import Link from "next/link"
 import { fetchDailyBooks } from "@/lib/daily-book/api"
 import { ArrowLeft, Plus, Calendar, Truck, Droplet } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { formatDateToString } from "@/lib/utils"
+import { useToast } from "@/components/ui/toast"
+import { useEffect, useState } from "react"
+import { fetchClientsForCombo } from "@/lib/customer/api"
+import SmartPagination from "@/components/ui/smart-pagination"
 
 
-export default async function LibrosDiarios() {
-  const dailyBooks = await fetchDailyBooks()
-  const loading = false // TODO: idk
+export default function LibrosDiarios() {
+  const { toast } = useToast()
+  const [loading, setLoading] = useState(true)
+  const [dailyBooks, setDailyBooks] = useState([])
+  const [clients, setClients] = useState([])
+  const [pagination, setPagination] = useState({
+    size: 0,
+    number: 0,
+    totalElements: 0,
+    totalPages: 0,
+  })
+  const [filters, setFilters] = useState({
+    dateFrom: "",
+    dateTo: "",
+    clientId: null,
+    status: null,
+  })
+
+  useEffect(() => {
+    fetchDailyBooksData()
+  }, [])
+
+  const fetchDailyBooksData = async (page = 0) => {
+    try {
+      setLoading(true)
+      const [response, clients] = await Promise.all([
+        fetchDailyBooks(page, filters),
+        fetchClientsForCombo(),
+      ])
+      setClients(clients)
+      setDailyBooks(response.content || [])
+      setPagination(response.page)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.message || "Error al cargar las facturas",
+        type: "error",
+        duration: 8000,
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 0 && newPage <= pagination.totalPages) {
+      fetchDailyBooksData(newPage)
+    }
+  }
 
   return (
     <div className="p-4 max-w-6xl mx-auto">
@@ -82,6 +134,7 @@ export default async function LibrosDiarios() {
               </Card>
             </Link>
           ))}
+          <SmartPagination page={pagination} onPageClick={handlePageChange}></SmartPagination>
         </div>
       )}
     </div>

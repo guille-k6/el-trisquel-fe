@@ -50,7 +50,7 @@ import {
   
     return (
       <Pagination>
-        <PaginationContent className={"my-2"}>
+        <PaginationContent className={"mt-6 mb-3"}>
           {/* First Page Button */}
           <PaginationItem>
             <PaginationLink

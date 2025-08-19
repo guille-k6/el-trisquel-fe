@@ -11,12 +11,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { FormDatePicker } from "@/components/ui/inputs/form-date-picker"
 import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
 import { formatDateToString, formatPrice } from "@/lib/utils"
-import Pagination from "@/components/ui/pagination"
 import { fetchInvoices } from "@/lib/invoice/api"
-import { fetchClients } from "@/lib/customer/api"
+import { fetchClientsForCombo } from "@/lib/customer/api"
 import { INVOICE_STATUS_OPTIONS } from "@/lib/invoice/status"
 import InvoiceStatusBadge from "./queue-status-badge"
-import ObjectViewer from "@/components/object-viewer"
 import SmartPagination from "@/components/ui/smart-pagination"
 
 export default function FacturasListado() {
@@ -47,7 +45,7 @@ export default function FacturasListado() {
       setLoading(true)
       const [response, clients] = await Promise.all([
         fetchInvoices(page, filters),
-        fetchClients(),
+        fetchClientsForCombo(),
       ])
       setClients(clients)
       setInvoices(response.content || [])

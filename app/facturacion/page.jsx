@@ -12,10 +12,11 @@ import { FormCheckInput } from "@/components/ui/inputs/form-check"
 import { FormDatePicker } from "@/components/ui/inputs/form-date-picker"
 import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
 import { Badge } from "@/components/ui/badge"
-import { fetchClients } from "@/lib/customer/api"
+import { fetchClientsForCombo } from "@/lib/customer/api"
 import { fetchInvoiceableDailyBookItems } from "@/lib/daily-book/api"
 import { formatDateToString, formatPrice } from "@/lib/utils"
 import Pagination from "@/components/ui/pagination"
+import SmartPagination from "@/components/ui/smart-pagination"
 
 export default function Facturacion() {
   const router = useRouter()
@@ -40,7 +41,7 @@ export default function Facturacion() {
 
   const fetchInitialData = async () => {
     try {
-      const clientsData = await fetchClients()
+      const clientsData = await fetchClientsForCombo()
       setClients(clientsData)
       await fetchItems()
     } catch (error) {
@@ -72,7 +73,7 @@ export default function Facturacion() {
   }
 
   const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= pagination.totalPages) {
+    if (newPage >= 0 && newPage <= pagination.totalPages) {
       fetchItems(newPage)
     }
   }
@@ -366,12 +367,7 @@ export default function Facturacion() {
             ))}
           </div>
 
-          {pagination.totalPages > 1 && (
-            <Pagination
-              page={pagination}
-              onPageChange={handlePageChange}
-            />
-          )}
+          <SmartPagination page={pagination} onPageChange={handlePageChange}/>
         </>
       )}
     </div>

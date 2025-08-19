@@ -11,11 +11,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { FormDatePicker } from "@/components/ui/inputs/form-date-picker"
 import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
 import { formatDateToString, formatPrice } from "@/lib/utils"
-import Pagination from "@/components/ui/pagination"
-import { FormNumberInput } from "@/components/ui/inputs/form-number-input"
 import { fetchInvoiceQueuesOrdered } from "@/lib/invoice-queue/api"
 import { INVOICE_STATUS_OPTIONS } from "@/lib/invoice/status"
 import InvoiceStatusBadge from "../facturas/queue-status-badge"
+import SmartPagination from "@/components/ui/smart-pagination"
 
 export default function Facturacion() {
   const router = useRouter()
@@ -23,12 +22,10 @@ export default function Facturacion() {
   const [loading, setLoading] = useState(true)
   const [invoiceQueues, setInvoiceQueues] = useState([])
   const [pagination, setPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
-    totalItems: 0,
-    pageSize: 10,
-    hasNextPage: false,
-    hasPreviousPage: false,
+    size: 0,
+    number: 0,
+    totalElements: 0,
+    totalPages: 0,
   })
   const [filters, setFilters] = useState({dateFrom: "", dateTo: "", queueStatus: ''})
 
@@ -52,17 +49,9 @@ export default function Facturacion() {
   const fetchInvoiceQueues = async (page = 0) => {
     try {
       setLoading(true)
-      
       const response = await fetchInvoiceQueuesOrdered(page, filters)
       setInvoiceQueues(response.content || [])
-      setPagination({
-        currentPage: response.pageable.pageNumber + 1,
-        totalPages: response.totalPages,
-        totalItems: response.totalElements,
-        pageSize: response.size,
-        hasNextPage: response.last === false,
-        hasPreviousPage: response.pageable.pageNumber > 0,
-      })     
+      setPagination(response.page)    
     } catch (error) {
       toast({
         title: "Error",
@@ -76,8 +65,8 @@ export default function Facturacion() {
   }
 
   const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= pagination.totalPages) {
-        fetchInvoiceQueues(newPage - 1)     
+    if (newPage >= 0 && newPage <= pagination.totalPages) {
+      fetchInvoiceQueues(newPage)
     }
   }
 
@@ -200,40 +189,31 @@ export default function Facturacion() {
                     <Card key={item.id} className={`overflow-hidden transition-colors hover:bg-gray-50 mb-4`}>
                         <CardContent className="p-4">
                             <div className="flex items-center gap-3">
-                                  <div>
-                                  <Label className="text-xs text-gray-500 uppercase tracking-wide">ID de factura: </Label>
-                                  <p className="font-medium text-blue-600">{item.invoiceId}</p>
-                                  </div>
+                              <div>
+                                <Label className="text-xs text-gray-500 uppercase tracking-wide">ID de factura: </Label>
+                                <p className="font-medium text-blue-600">{item.invoiceId}</p>
+                              </div>
 
-                                  <div>
-                                  <Label className="text-xs text-gray-500 uppercase tracking-wide">Fecha de encolado</Label>
-                                  <p className="font-medium">{formatDateToString(item.enqueuedAt)}</p>
-                                  </div>
+                              <div>
+                                <Label className="text-xs text-gray-500 uppercase tracking-wide">Fecha de encolado</Label>
+                                <p className="font-medium">{formatDateToString(item.enqueuedAt)}</p>
+                              </div>
 
-                                  <div>
-                                  <Label className="text-xs text-gray-500 uppercase tracking-wide">Intento N°</Label>
-                                  <p className="font-medium">{item.retryCount}</p>
-                                  </div>
+                              <div>
+                                <Label className="text-xs text-gray-500 uppercase tracking-wide">Intento N°</Label>
+                                <p className="font-medium">{item.retryCount}</p>
+                              </div>
 
-                                  <div>
-                                  <InvoiceStatusBadge status={item.status}/>
-                                  </div>
+                              <div>
+                                <InvoiceStatusBadge status={item.status}/>
+                              </div>
                             </div>
                         </CardContent>
                     </Card>
               </Link>
             ))}
           </div>
-
-          {pagination.totalPages > 1 && (
-            <Pagination
-              currentPage={pagination.currentPage}
-              totalPages={pagination.totalPages}
-              hasPreviousPage={pagination.hasPreviousPage}
-              hasNextPage={pagination.hasNextPage}
-              onPageChange={handlePageChange}
-            />
-          )}
+          <SmartPagination page={pagination} onPageClick={handlePageChange}/>
         </>
       )}
     </div>

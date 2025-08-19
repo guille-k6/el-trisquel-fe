@@ -6,7 +6,7 @@ import Link from "next/link"
 import { postNewDailyBook } from "@/lib/daily-book/api"
 import { fetchVehicles } from "@/lib/vehicle/api"
 import { fetchProducts } from "@/lib/product/api"
-import { fetchClients } from "@/lib/customer/api"
+import { fetchClients, fetchClientsForCombo } from "@/lib/customer/api"
 import { ArrowLeft, Save, X, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -59,7 +59,7 @@ export default function NewLibroDiario() {
       const [vehiclesData, productsData, clientsData, latestVoucherNumber, latestXVoucher] = await Promise.all([
         fetchVehicles(),
         fetchProducts(),
-        fetchClients(),
+        fetchClientsForCombo(),
         fetchLatestVoucherNumber(),
         fetchLatestXVoucher()
       ])

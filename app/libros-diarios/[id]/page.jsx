@@ -6,7 +6,7 @@ import Link from "next/link"
 import { fetchDailyBookById, deleteDailyBook, postNewDailyBook, fetchLatestVoucherNumber, fetchLatestXVoucher } from "@/lib/daily-book/api"
 import { fetchVehicles } from "@/lib/vehicle/api"
 import { fetchProducts } from "@/lib/product/api"
-import { fetchClients } from "@/lib/customer/api"
+import { fetchClientsForCombo } from "@/lib/customer/api"
 import { ArrowLeft, Save, Edit, X, Plus, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -19,6 +19,7 @@ import { useToast } from "@/components/ui/toast"
 import { Card, CardContent } from "@/components/ui/card"
 import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
 import { getTodayDateForInput } from "@/lib/utils"
+import ObjectViewer from "@/components/object-viewer"
 
 export default function LibroDiarioDetail({ params }) {
   const { toast } = useToast()
@@ -43,6 +44,7 @@ export default function LibroDiarioDetail({ params }) {
     pressureTankAfter: 0,
     nitrogenProvider: "",
     items: [],
+    editable: false,
   })
   const [formDataCopy, setFormDataCopy] = useState({})
   const [latestVoucherNumberCopy, setLatestVoucherNumberCopy] = useState()
@@ -66,7 +68,7 @@ export default function LibroDiarioDetail({ params }) {
         fetchDailyBookById(id),
         fetchVehicles(),
         fetchProducts(),
-        fetchClients(),
+        fetchClientsForCombo(),
         fetchLatestVoucherNumber(),
         fetchLatestXVoucher()
       ])
@@ -81,22 +83,7 @@ export default function LibroDiarioDetail({ params }) {
           }
         });
       }
-      setFormData({
-        id: libroDiarioData.id,
-        date: libroDiarioData.date,
-        vehicle: libroDiarioData.vehicle,
-        vehicleKmsBefore: libroDiarioData.vehicleKmsBefore,
-        vehicleKmsAfter: libroDiarioData.vehicleKmsAfter,
-        kgTankBefore: libroDiarioData.kgTankBefore,
-        kgTankAfter: libroDiarioData.kgTankAfter,
-        pressureTankBefore: libroDiarioData.pressureTankBefore,
-        pressureTankAfter: libroDiarioData.pressureTankAfter,
-        ltExtractedTank: libroDiarioData.ltExtractedTank,
-        ltRemainingFlask: libroDiarioData.ltRemainingFlask,
-        ltTotalFlask: libroDiarioData.ltTotalFlask,
-        nitrogenProvider: libroDiarioData.nitrogenProvider,
-        items: libroDiarioData.items || [],
-      })
+      setFormData(libroDiarioData)
 
       setVehicles(vehiclesData)
       setProducts(productsData)
@@ -671,36 +658,38 @@ export default function LibroDiarioDetail({ params }) {
           )}
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 pt-4">
-          {isEditing ? (
-            <>
-              <Button type="submit" disabled={saving} className="bg-green-600 hover:bg-green-700">
-                {saving ? (
-                  <>
-                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"></div>
-                    Guardando...
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-2 h-4 w-4" /> Guardar Cambios
-                  </>
-                )}
-              </Button>
+        {formData.editable && (
+          <div className="flex flex-col sm:flex-row gap-3 pt-4">
+            {isEditing ? (
+              <>
+                <Button type="submit" disabled={saving} className="bg-green-600 hover:bg-green-700">
+                  {saving ? (
+                    <>
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"></div>
+                      Guardando...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" /> Guardar Cambios
+                    </>
+                  )}
+                </Button>
 
-              <Button type="button" variant="outline" onClick={handleCancel} disabled={saving}>
-                <X className="mr-2 h-4 w-4" /> Cancelar
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button type="button" onClick={handleEdit}>
-                <Edit className="mr-2 h-4 w-4" /> Editar
-              </Button>
+                <Button type="button" variant="outline" onClick={handleCancel} disabled={saving}>
+                  <X className="mr-2 h-4 w-4" /> Cancelar
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button type="button" onClick={handleEdit}>
+                  <Edit className="mr-2 h-4 w-4" /> Editar
+                </Button>
 
-              <DeleteWithModal onDelete={handleDelete}></DeleteWithModal>
-            </>
-          )}
-        </div>
+                <DeleteWithModal onDelete={handleDelete}></DeleteWithModal>
+              </>
+            )}
+          </div>
+        )}
       </form>
     </div>
   )
