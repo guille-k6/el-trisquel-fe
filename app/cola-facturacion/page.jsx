@@ -15,6 +15,7 @@ import { fetchInvoiceQueuesOrdered } from "@/lib/invoice-queue/api"
 import { INVOICE_STATUS_OPTIONS } from "@/lib/invoice/status"
 import InvoiceStatusBadge from "../facturas/queue-status-badge"
 import SmartPagination from "@/components/ui/smart-pagination"
+import { SmartFilter } from "@/components/ui/smart-filter"
 
 export default function Facturacion() {
   const router = useRouter()
@@ -27,7 +28,11 @@ export default function Facturacion() {
     totalElements: 0,
     totalPages: 0,
   })
-  const [filters, setFilters] = useState({dateFrom: "", dateTo: "", queueStatus: ''})
+  const [filters, setFilters] = useState({
+    dateFrom: "",
+    dateTo: "",
+    queueStatus: '',
+  })
 
   useEffect(() => {
     fetchInitialData()
@@ -46,7 +51,7 @@ export default function Facturacion() {
     }
   }
 
-  const fetchInvoiceQueues = async (page = 0) => {
+  const fetchInvoiceQueues = async (page = 0, filters = {}) => {
     try {
       setLoading(true)
       const response = await fetchInvoiceQueuesOrdered(page, filters)
@@ -64,12 +69,6 @@ export default function Facturacion() {
     }
   }
 
-  const handlePageChange = (newPage) => {
-    if (newPage >= 0 && newPage <= pagination.totalPages) {
-      fetchInvoiceQueues(newPage)
-    }
-  }
-
   const handleFilterChange = (field, value) => {
     setFilters((prev) => ({
       ...prev,
@@ -78,7 +77,7 @@ export default function Facturacion() {
   }
 
   const applyFilters = () => {
-    fetchInvoiceQueues()
+    fetchInvoiceQueues(0, filters)
   }
 
   const clearFilters = () => {
@@ -88,10 +87,13 @@ export default function Facturacion() {
       queueStatus: '',
     }
     setFilters(emptyFilters)
+    fetchInvoiceQueues(0, emptyFilters)
   }
 
-  const hasActiveFilters = () => {
-    return filters.dateFrom || filters.dateTo || filters.queueStatus != {}
+  const handlePageChange = (newPage) => {
+    if (newPage >= 0 && newPage <= pagination.totalPages) {
+      fetchInvoiceQueues(newPage)
+    }
   }
 
   return (
@@ -105,57 +107,35 @@ export default function Facturacion() {
         <h1 className="text-2xl font-bold mb-4 sm:mb-0">Cola de facturación</h1>
       </div>
 
-      {/* Filters Section */}
-      <Card className="mb-6">
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row sm:items-end gap-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 flex-1">
-              <div className="space-y-2">
-                <Label htmlFor="dateFrom">Fecha desde</Label>
-                <FormDatePicker
-                  id="dateFrom"
-                  value={filters.dateFrom}
-                  onChange={(e) => handleFilterChange("dateFrom", e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="dateTo">Fecha hasta</Label>
-                <FormDatePicker
-                  id="dateTo"
-                  value={filters.dateTo}
-                  onChange={(e) => handleFilterChange("dateTo", e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="invoiceStatusFilter"> Estado de cola de factura</Label>
-                <FormCombo
-                  id="invoiceStatusFilter"
-                  options={INVOICE_STATUS_OPTIONS}
-                  placeholder="Todos los estados"
-                  onChange={(option) => handleFilterChange("queueStatus", option?.id || null)}
-                  displayKey="name"
-                  valueKey="id"
-                  defaultValue={filters.queueStatus.id || ""}
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              <Button onClick={applyFilters} size="sm" className="bg-blue-600 hover:bg-blue-700">
-                <Search className="mr-2 h-4 w-4" /> Filtrar
-              </Button>
-
-              {hasActiveFilters() && (
-                <Button onClick={clearFilters} variant="outline" size="sm">
-                  <X className="mr-2 h-4 w-4" /> Limpiar
-                </Button>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <SmartFilter
+        filtersList={[
+          {
+            propertyName: "dateFrom",
+            displayName: "Fecha desde",
+            type: "DATE",
+            placeholder: "Fecha desde",
+          },
+          {
+            propertyName: "dateTo",
+            displayName: "Fecha hasta",
+            type: "DATE",
+            placeholder: "Fecha hasta",
+          },
+          {
+            propertyName: "queueStatus",
+            displayName: "Estado de facturación",
+            type: "SELECT",
+            placeholder: "Seleccionar estado",
+            options: INVOICE_STATUS_OPTIONS,
+          },
+        ]}
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onApplyFilters={applyFilters}
+        onClearFilters={clearFilters}
+        applyButtonText="Filtrar"
+        clearButtonText="Limpiar"
+      />
 
       {loading ? (
         <div className="flex justify-center items-center py-12">
@@ -164,21 +144,17 @@ export default function Facturacion() {
       ) : invoiceQueues.length === 0 ? (
         <div className="text-center py-10">
           <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <p className="text-gray-500 text-lg">
-            {hasActiveFilters()
-              ? "No se encontraron estados de facturación con los filtros aplicados"
-              : "No hay colas de facturación"}
-          </p>
+          <p className="text-gray-500 text-lg">No hay instancias de cola de facturación</p>
         </div>
       ) : (
         <>
           {/* Results Summary */}
           <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <p className="text-sm text-gray-600">
-              Mostrando {invoiceQueues.length} de {pagination.totalItems} items
+              Mostrando {invoiceQueues.length} de {pagination.totalElements} items
             </p>
             <p className="text-sm text-gray-600">
-              Página {pagination.currentPage} de {pagination.totalPages}
+              Página {pagination.number + 1} de {pagination.totalPages}
             </p>
           </div>
 
@@ -188,7 +164,7 @@ export default function Facturacion() {
               <Link key={item.id} href={`/cola-facturacion/${item.id}`}>
                     <Card key={item.id} className={`overflow-hidden transition-colors hover:bg-gray-50 mb-4`}>
                         <CardContent className="p-4">
-                            <div className="flex items-center gap-3">
+                            <div className="flex justify-between gap-3">
                               <div>
                                 <Label className="text-xs text-gray-500 uppercase tracking-wide">ID de factura: </Label>
                                 <p className="font-medium text-blue-600">{item.invoiceId}</p>
@@ -204,7 +180,7 @@ export default function Facturacion() {
                                 <p className="font-medium">{item.retryCount}</p>
                               </div>
 
-                              <div>
+                              <div className="min-w-[120px]">
                                 <InvoiceStatusBadge status={item.status}/>
                               </div>
                             </div>

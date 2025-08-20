@@ -15,8 +15,8 @@ import { Badge } from "@/components/ui/badge"
 import { fetchClientsForCombo } from "@/lib/customer/api"
 import { fetchInvoiceableDailyBookItems } from "@/lib/daily-book/api"
 import { formatDateToString, formatPrice } from "@/lib/utils"
-import Pagination from "@/components/ui/pagination"
 import SmartPagination from "@/components/ui/smart-pagination"
+import { SmartFilter } from "@/components/ui/smart-filter"
 
 export default function Facturacion() {
   const router = useRouter()
@@ -33,7 +33,11 @@ export default function Facturacion() {
     totalElements: 0,
     totalPages: 0,
   })
-  const [filters, setFilters] = useState({dateFrom: "", dateTo: "", clientId: null})
+  const [filters, setFilters] = useState({
+    dateFrom: "", 
+    dateTo: "", 
+    clientId: null
+  })
 
   useEffect(() => {
     fetchInitialData()
@@ -54,7 +58,7 @@ export default function Facturacion() {
     }
   }
 
-  const fetchItems = async (page = 0) => {
+  const fetchItems = async (page = 0, filters = {}) => {
     try {
       setLoading(true)
       const response = await fetchInvoiceableDailyBookItems(page, filters)
@@ -89,8 +93,7 @@ export default function Facturacion() {
     setSelectedItems([])
     setSelectedClientId(null)
     setSelectedClientName("")
-    console.log(filters);
-    fetchItems(1)
+    fetchItems(0, filters)
   }
 
   const clearFilters = () => {
@@ -100,15 +103,10 @@ export default function Facturacion() {
       clientId: null,
     }
     setFilters(emptyFilters)
-
-    // Clear selection when clearing filters
     setSelectedItems([])
     setSelectedClientId(null)
     setSelectedClientName("")
-  }
-
-  const hasActiveFilters = () => {
-    return filters.dateFrom || filters.dateTo || filters.clientId
+    fetchItems(0, emptyFilters)
   }
 
   const handleItemSelection = (item, checked) => {
@@ -191,57 +189,35 @@ export default function Facturacion() {
         )}
       </div>
 
-      {/* Filters Section */}
-      <Card className="mb-6">
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row sm:items-end gap-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 flex-1">
-              <div className="space-y-2">
-                <Label htmlFor="dateFrom">Fecha desde</Label>
-                <FormDatePicker
-                  id="dateFrom"
-                  value={filters.dateFrom}
-                  onChange={(e) => handleFilterChange("dateFrom", e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="dateTo">Fecha hasta</Label>
-                <FormDatePicker
-                  id="dateTo"
-                  value={filters.dateTo}
-                  onChange={(e) => handleFilterChange("dateTo", e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="clientFilter">Cliente</Label>
-                <FormCombo
-                  id="clientFilter"
-                  options={clients}
-                  placeholder="Todos los clientes"
-                  onChange={(option) => handleFilterChange("clientId", option?.id || null)}
-                  displayKey="name"
-                  valueKey="id"
-                  defaultValue={getSelectedClientFromFilters()}
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              <Button onClick={applyFilters} size="sm" className="bg-blue-600 hover:bg-blue-700">
-                <Search className="mr-2 h-4 w-4" /> Filtrar
-              </Button>
-
-              {hasActiveFilters() && (
-                <Button onClick={clearFilters} variant="outline" size="sm">
-                  <X className="mr-2 h-4 w-4" /> Limpiar
-                </Button>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <SmartFilter
+        filtersList={[
+          {
+            propertyName: "dateFrom",
+            displayName: "Fecha desde",
+            type: "DATE",
+            placeholder: "Fecha desde",
+          },
+          {
+            propertyName: "dateTo",
+            displayName: "Fecha hasta",
+            type: "DATE",
+            placeholder: "Fecha hasta",
+          },
+          {
+            propertyName: "clientId",
+            displayName: "Cliente",
+            type: "SELECT",
+            placeholder: "Seleccionar cliente",
+            options: clients,
+          },
+        ]}
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onApplyFilters={applyFilters}
+        onClearFilters={clearFilters}
+        applyButtonText="Filtrar"
+        clearButtonText="Limpiar"
+      />
 
       {selectedItems.length > 0 && (
         <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
@@ -276,11 +252,7 @@ export default function Facturacion() {
       ) : dailyBookItems.length === 0 ? (
         <div className="text-center py-10">
           <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <p className="text-gray-500 text-lg">
-            {hasActiveFilters()
-              ? "No se encontraron items con los filtros aplicados"
-              : "No hay items pendientes de facturación"}
-          </p>
+          <p className="text-gray-500 text-lg">No se encontraron items pendientes de facturación</p>
         </div>
       ) : (
         <>

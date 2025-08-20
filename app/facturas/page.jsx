@@ -40,7 +40,7 @@ export default function FacturasListado() {
     fetchInvoicesData()
   }, [])
 
-  const fetchInvoicesData = async (page = 0) => {
+  const fetchInvoicesData = async (page = 0, filters = {}) => {
     try {
       setLoading(true)
       const [response, clients] = await Promise.all([
@@ -88,6 +88,7 @@ export default function FacturasListado() {
       status: null,
     }
     setFilters(emptyFilters)
+    fetchInvoicesData(0, emptyFilters)
   }
 
   const hasActiveFilters = () => {

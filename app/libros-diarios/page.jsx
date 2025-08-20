@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/toast"
 import { useEffect, useState } from "react"
 import { fetchClientsForCombo } from "@/lib/customer/api"
 import SmartPagination from "@/components/ui/smart-pagination"
+import { SmartFilter } from "@/components/ui/smart-filter"
 
 
 export default function LibrosDiarios() {
@@ -26,15 +27,13 @@ export default function LibrosDiarios() {
   const [filters, setFilters] = useState({
     dateFrom: "",
     dateTo: "",
-    clientId: null,
-    status: null,
   })
 
   useEffect(() => {
     fetchDailyBooksData()
   }, [])
 
-  const fetchDailyBooksData = async (page = 0) => {
+  const fetchDailyBooksData = async (page = 0, filters = {}) => {
     try {
       setLoading(true)
       const [response, clients] = await Promise.all([
@@ -54,6 +53,25 @@ export default function LibrosDiarios() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleFilterChange = (field, value) => {
+    setFilters((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+  }
+
+  const applyFilters = () => {
+    fetchDailyBooksData(0, filters)
+  }
+
+  const clearFilters = () => {
+    const emptyFilters = {
+      searchText: "",
+    }
+    setFilters(emptyFilters)
+    fetchDailyBooksData(0, emptyFilters)
   }
 
   const handlePageChange = (newPage) => {
@@ -78,16 +96,45 @@ export default function LibrosDiarios() {
         </Link>
       </div>
 
+      <SmartFilter
+        filtersList={[
+          {
+            propertyName: "dateFrom",
+            displayName: "Fecha desde",
+            type: "DATE",
+            placeholder: "Fecha desde",
+          },
+          {
+            propertyName: "dateTo",
+            displayName: "Fecha hasta",
+            type: "DATE",
+            placeholder: "Fecha hasta",
+          },
+        ]}
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onApplyFilters={applyFilters}
+        onClearFilters={clearFilters}
+        applyButtonText="Filtrar"
+        clearButtonText="Limpiar"
+      />
+
+      <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <p className="text-sm text-gray-600">
+          Mostrando {dailyBooks.length} de {pagination.totalElements} items
+        </p>
+        <p className="text-sm text-gray-600">
+          Página {pagination.number + 1} de {pagination.totalPages}
+        </p>
+      </div>
+
       {loading ? (
         <div className="flex justify-center py-10">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
         </div>
       ) : dailyBooks.length === 0 ? (
-        <div className="text-center py-10 bg-gray-50 rounded-lg">
-          <p className="text-gray-500">No hay libros diarios registrados</p>
-          <Link href="/libros-diarios/nuevo">
-            <Button className="mt-4 bg-blue-600 hover:bg-blue-700">Agregar Libro Diario</Button>
-          </Link>
+        <div className="text-center py-10">
+          <p className="text-gray-500">No existen libros diarios</p>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-1">
@@ -96,10 +143,10 @@ export default function LibrosDiarios() {
               <Card className="h-full hover:shadow-md transition-shadow cursor-pointer">
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start mb-3">
-                    <h2 className="font-semibold text-lg">Libro Diario #{dailyBook.id}</h2>
+                    <h2 className="font-semibold text-lg">#{dailyBook.id} Libro diario</h2>
                     <div className="flex items-center text-gray-600">
                       <Calendar className="h-4 w-4 mr-2" />
-                      <span className="text-sm">{formatDateToString(dailyBook.date)}</span>
+                      <span className="text-sm font-semibold">{formatDateToString(dailyBook.date)}</span>
                     </div>
                   </div>
 
