@@ -17,6 +17,7 @@ export default function NewProduct() {
   const [saving, setSaving] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
+    measureUnit: "",
   })
 
   const handleSubmit = async (e) => {
@@ -69,6 +70,11 @@ export default function NewProduct() {
         <div className="space-y-2">
           <Label htmlFor="name">Nombre del Producto</Label>
           <FormTextInput id="name" value={formData.name} readOnly={false} onChange={handleInputChange("name")} required/>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="name">Unidad de medida</Label>
+          <FormTextInput id="name" value={formData.measureUnit} readOnly={false} onChange={handleInputChange("measureUnit")} required/>
         </div>
 
         <Button type="submit" className="bg-green-600 hover:bg-green-700 mt-4 mr-2" disabled={saving}>

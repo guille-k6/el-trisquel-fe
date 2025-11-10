@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, use } from "react"
+import { useState, useEffect, use } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { fetchProductById } from "@/lib/product/api"
@@ -25,6 +25,7 @@ export default function ProductDetail({ params }) {
   const [formData, setFormData] = useState({
     id: '',
     name: '',
+    measureUnit: '',
   })
   const [formDataCopy, setFormDataCopy] = useState({})
   const [foundProduct, setFoundProduct] = useState(true)
@@ -62,6 +63,7 @@ export default function ProductDetail({ params }) {
       await postNewProduct({
         id: id,
         name: formData.name,
+        measureUnit: formData.measureUnit,
       })
       setIsEditing(false)
       toast({
@@ -164,6 +166,11 @@ export default function ProductDetail({ params }) {
         <div className="space-y-2">
           <Label htmlFor="name">Nombre del Producto</Label>
           <FormTextInput id="name" readOnly={!isEditing} value={formData.name} onChange={handleInputChange("name")} required/>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="name">Unidad de medida</Label>
+          <FormTextInput id="measureUnit" readOnly={!isEditing} value={formData.measureUnit} onChange={handleInputChange("measureUnit")} required/>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 pt-4">

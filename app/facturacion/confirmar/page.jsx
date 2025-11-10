@@ -423,8 +423,6 @@ export default function BillingConfirmationPage() {
               </Alert>
             )}
 
-            <ObjectViewer data={client}></ObjectViewer>
-
             <PriceSuggestion
               isOpen={priceModalOpen}
               onClose={() => setPriceModalOpen(false)}

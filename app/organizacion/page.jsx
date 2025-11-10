@@ -23,10 +23,15 @@ export default function Organization() {
     value: {
       razonSocial: "",
       domicilioComercial: "",
-      condicionIva: "",
+      ciudad: "",
+      provincia: "",
+      codigoPostal: "",
       cuit: "",
+      condicionIva: "",
       ingresosBrutos: "",
       fechaInicioActividades: "",
+      telefono: "",
+      mail: "",
     }
   })
   const [formDataCopy, setFormDataCopy] = useState({})
@@ -134,48 +139,83 @@ export default function Organization() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Razón Social */}
-          <div className="space-y-2">
-            <Label htmlFor="razonSocial">
-              Razón Social <span className="text-red-500">*</span>
-            </Label>
-            <FormTextInput
-              id="razonSocial"
-              value={formData.value.razonSocial}
-              onChange={handleInputChange("razonSocial")}
-              readOnly={!isEditing}
-              placeholder="Ingrese la razón social de la empresa"
-              required
-            />
-          </div>
 
-          {/* Domicilio Comercial */}
-          <div className="space-y-2">
-            <Label htmlFor="domicilioComercial">
-              Domicilio Comercial <span className="text-red-500">*</span>
-            </Label>
-            <FormTextInput
-              id="domicilioComercial"
-              value={formData.value.domicilioComercial}
-              onChange={handleInputChange("domicilioComercial")}
-              readOnly={!isEditing}
-              placeholder="Ingrese el domicilio comercial"
-              required
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Razón Social */}
+            <div className="space-y-2">
+              <Label htmlFor="razonSocial">
+                Razón Social <span className="text-red-500">*</span>
+              </Label>
+              <FormTextInput
+                id="razonSocial"
+                value={formData.value.razonSocial}
+                onChange={handleInputChange("razonSocial")}
+                readOnly={!isEditing}
+                placeholder="Ingrese la razón social de la empresa"
+                required
+              />
+            </div>
+
+            {/* Domicilio Comercial */}
+            <div className="space-y-2">
+              <Label htmlFor="domicilioComercial">
+                Domicilio Comercial <span className="text-red-500">*</span>
+              </Label>
+              <FormTextInput
+                id="domicilioComercial"
+                value={formData.value.domicilioComercial}
+                onChange={handleInputChange("domicilioComercial")}
+                readOnly={!isEditing}
+                placeholder="Ingrese el domicilio comercial"
+                required
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Condición frente al IVA */}
+            {/* Ciudad */}
             <div className="space-y-2">
-              <Label htmlFor="condicionIva">
-                Condición frente al IVA <span className="text-red-500">*</span>
+              <Label htmlFor="ciudad">
+                Ciudad <span className="text-red-500">*</span>
               </Label>
               <FormTextInput
-                id="condicionIva"
-                value={formData.value.condicionIva}
-                onChange={handleInputChange("condicionIva")}
+                id="ciudad"
+                value={formData.value.ciudad}
+                onChange={handleInputChange("ciudad")}
                 readOnly={!isEditing}
-                placeholder="Seleccione condición IVA"
+                placeholder="Ingrese la ciudad de la empresa"
+                required
+              />
+            </div>
+
+            {/* Provincia */}
+            <div className="space-y-2">
+              <Label htmlFor="provincia">
+                Provincia <span className="text-red-500">*</span>
+              </Label>
+              <FormTextInput
+                id="provincia"
+                value={formData.value.provincia}
+                onChange={handleInputChange("provincia")}
+                readOnly={!isEditing}
+                placeholder="Ingrese su provincia"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Codigo postal */}
+            <div className="space-y-2">
+              <Label htmlFor="codigoPostal">
+                Código postal <span className="text-red-500">*</span>
+              </Label>
+              <FormTextInput
+                id="codigoPostal"
+                value={formData.value.codigoPostal}
+                onChange={handleInputChange("codigoPostal")}
+                readOnly={!isEditing}
+                placeholder="Ingrese el CP de la ciudad de la empresa"
                 required
               />
             </div>
@@ -197,6 +237,20 @@ export default function Organization() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Condición frente al IVA */}
+            <div className="space-y-2">
+              <Label htmlFor="condicionIva">
+                Condición frente al IVA <span className="text-red-500">*</span>
+              </Label>
+              <FormTextInput
+                id="condicionIva"
+                value={formData.value.condicionIva}
+                onChange={handleInputChange("condicionIva")}
+                readOnly={!isEditing}
+                placeholder="Seleccione condición IVA"
+                required
+              />
+            </div>
             {/* Ingresos Brutos */}
             <div className="space-y-2">
               <Label htmlFor="ingresosBrutos">Ingresos Brutos</Label>
@@ -209,7 +263,9 @@ export default function Organization() {
                 required
               />
             </div>
+          </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Fecha de Inicio de Actividades */}
             <div className="space-y-2">
               <Label htmlFor="fechaInicioActividades">
@@ -223,6 +279,41 @@ export default function Organization() {
                 required
               />
             </div>
+
+            {/* Telefono */}
+            <div className="space-y-2">
+              <Label htmlFor="telefono">
+                Telefono <span className="text-red-500">*</span>
+              </Label>
+              <FormTextInput
+                id="telefono"
+                value={formData.value.telefono}
+                onChange={handleInputChange("telefono")}
+                readOnly={!isEditing}
+                placeholder="Seleccione condición IVA"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Mail */}
+            <div className="space-y-2">
+              <Label htmlFor="mail">
+                Mail <span className="text-red-500">*</span>
+              </Label>
+              <FormTextInput
+                id="mail"
+                value={formData.value.mail}
+                onChange={handleInputChange("mail")}
+                readOnly={!isEditing}
+                placeholder="Seleccione condición IVA"
+                required
+              />
+            </div>
+
+
+
           </div>
 
           {/* Botones de acción */}
@@ -266,7 +357,7 @@ export default function Organization() {
               <p className="font-medium text-gray-700 mb-1">Información importante:</p>
               <ul className="space-y-1 text-sm">
                 <li>
-                  • Los campos marcados con <span className="text-red-500">*</span> son obligatorios
+                  • Son los datos que aparecerán en las facturas emitidas por el sistema
                 </li>
                 <li>• El CUIT debe ingresarse con el formato XX-XXXXXXXX-X</li>
                 <li>• Esta información se utilizará en la generación de facturas y reportes</li>
