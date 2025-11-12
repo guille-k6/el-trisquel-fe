@@ -11,6 +11,10 @@ import { getConfiguration } from "@/lib/configuration/api";
 import { FormTextInput } from "@/components/ui/inputs/form-text-input"
 import { FormDatePicker } from "@/components/ui/inputs/form-date-picker"
 import { saveConfiguration } from "@/lib/configuration/api"
+import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
+import { fetchProducts } from "@/lib/product/api"
+import { fetchVehiclesForCombo } from "@/lib/vehicle/api"
+import ObjectViewer from "@/components/object-viewer"
 
 export default function Organization() {
   const { toast } = useToast()
@@ -32,9 +36,13 @@ export default function Organization() {
       fechaInicioActividades: "",
       telefono: "",
       mail: "",
+      productoDefault: {},
+      vehiculoDefault: {},
     }
   })
   const [formDataCopy, setFormDataCopy] = useState({})
+  const [products, setProducts] = useState([]);
+  const [vehicles, setVehicles] = useState([]);
 
   useEffect(() => {
     fetchConfiguration()
@@ -43,10 +51,14 @@ export default function Organization() {
   const fetchConfiguration = async () => {
     try {
       setLoading(true)
-      const response = await getConfiguration("org");
-      console.log(response);
-      
+      const [response, products, vehicles] = await Promise.all([
+        getConfiguration("org"),
+        fetchProducts(),
+        fetchVehiclesForCombo(),
+      ]);
       setFormData(response)
+      setProducts(products);
+      setVehicles(vehicles);
     } catch (error) {
       toast({
         title: "Error",
@@ -109,6 +121,16 @@ export default function Organization() {
     setIsEditing(false)
   }
 
+  const handleChange = (field, newValue) => {
+    setFormData(prev => ({
+      ...prev,
+      value: {
+        ...prev.value,
+        [field]: newValue,
+      },
+    }))
+  }
+
   if (loading) {
     return (
       <div className="p-4 max-w-6xl mx-auto">
@@ -130,6 +152,50 @@ export default function Organization() {
         <Building className="h-8 w-8 text-gray-600" />
         <h1 className="text-2xl font-bold">Configuración General</h1>
       </div>
+
+      <Card className="mb-3">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building className="h-5 w-5" />
+            Configuración Predeterminada
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Producto Default */}
+            <div className="space-y-2">
+              <Label htmlFor="productoDefault">
+                Producto Predeterminado <span className="text-red-500">*</span>
+              </Label>
+              <FormCombo
+                id="productoDefault"
+                options={products} // Lista de opciones de productos
+                defaultValue={formData.value.productoDefault}
+                onChange={(option) => handleChange("productoDefault", option)}
+                placeholder="Seleccione el producto predeterminado"
+                readOnly={!isEditing}
+                required
+              />
+            </div>
+
+            {/* Vehículo Default */}
+            <div className="space-y-2">
+              <Label htmlFor="vehiculoDefault">
+                Vehículo Predeterminado <span className="text-red-500">*</span>
+              </Label>
+              <FormCombo
+                id="vehiculoDefault"
+                options={vehicles} // Lista de opciones de vehículos
+                defaultValue={formData.value.vehiculoDefault}
+                onChange={(option) => handleChange("vehiculoDefault", option)}
+                placeholder="Seleccione el vehículo predeterminado"
+                readOnly={!isEditing}
+                required
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
