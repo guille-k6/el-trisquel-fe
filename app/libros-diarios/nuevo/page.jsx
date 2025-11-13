@@ -4,8 +4,8 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { postNewDailyBook } from "@/lib/daily-book/api"
-import { fetchVehicles } from "@/lib/vehicle/api"
-import { fetchProducts } from "@/lib/product/api"
+import { fetchVehicles, fetchVehiclesForCombo } from "@/lib/vehicle/api"
+import { fetchProducts, fetchProductsForCombo } from "@/lib/product/api"
 import { fetchClients, fetchClientsForCombo } from "@/lib/customer/api"
 import { ArrowLeft, Save, X, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -19,6 +19,7 @@ import { FormTextInput } from "@/components/ui/inputs/form-text-input"
 import { FormCheckInput } from "@/components/ui/inputs/form-check"
 import { getTodayDateForInput } from "@/lib/utils"
 import { fetchLatestVoucherNumber, fetchLatestXVoucher } from "@/lib/daily-book/api"
+import ObjectViewer from "@/components/object-viewer"
 
 export default function NewLibroDiario() {
   const { toast } = useToast()
@@ -43,8 +44,8 @@ export default function NewLibroDiario() {
   })
   const [latestVoucherNumber, setLastVoucherNumber] = useState() // Fetch once, then I handle myself the increment or decrement
   const [latestXVoucher, setLatestXVoucher] = useState()
-  const [vehicles, setVehicles] = useState([])
-  const [products, setProducts] = useState([])
+  const [vehicles, setVehicles] = useState({})
+  const [products, setProducts] = useState({})
   const [clients, setClients] = useState([])
 
   const nitrogenProviders = [{ id: "Air Liquide", name: "Air Liquide" }, { id: "Linde", name: "Linde" }];
@@ -57,8 +58,8 @@ export default function NewLibroDiario() {
     try {
       setLoading(true)
       const [vehiclesData, productsData, clientsData, latestVoucherNumber, latestXVoucher] = await Promise.all([
-        fetchVehicles(),
-        fetchProducts(),
+        fetchVehiclesForCombo(),
+        fetchProductsForCombo(),
         fetchClientsForCombo(),
         fetchLatestVoucherNumber(),
         fetchLatestXVoucher()
@@ -130,7 +131,7 @@ export default function NewLibroDiario() {
     setLastVoucherNumber(newVoucherNumber);
     const newItem = {
       amount: 0,
-      product: {},
+      product: products.defaultConfig,
       client: {},
       authorized: false,
       addedLocally: true,
@@ -271,6 +272,10 @@ export default function NewLibroDiario() {
 
       <h1 className="text-2xl font-bold mb-6">Nuevo Libro Diario</h1>
 
+      <ObjectViewer data={formData} title="Debug Form Data" />
+      <ObjectViewer data={vehicles} title="Debug Vehicles Data" />
+      <ObjectViewer data={products} title="Debug Products Data" />
+
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
@@ -294,11 +299,11 @@ export default function NewLibroDiario() {
                 </Label>
                 <FormCombo
                   id="vehicleCombo"
-                  options={vehicles}
+                  options={vehicles.vehicles}
                   placeholder="Vehículo..."
                   onChange={(option) => handleChange("vehicle", option)}
                   readOnly={false}
-                  defaultValue={formData.vehicle}
+                  defaultValue={formData.vehicle || vehicles.defaultConfig}
                   required
                 />
               </div>
@@ -500,12 +505,12 @@ export default function NewLibroDiario() {
                         <Label htmlFor={`item-product-${index}`}>Producto</Label>
                         <FormCombo
                           id={`item-product-${index}`}
-                          options={products}
+                          options={products.products}
                           placeholder="Elegir producto..."
                           onChange={(selectedOption) => handleItemChange(index, "product", selectedOption)}
                           displayKey="name"
                           valueKey="id"
-                          defaultValue={item.product}
+                          defaultValue={item.product || products.defaultConfig}
                           readOnly={false}
                           required
                         />

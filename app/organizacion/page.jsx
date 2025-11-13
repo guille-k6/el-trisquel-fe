@@ -13,7 +13,7 @@ import { FormDatePicker } from "@/components/ui/inputs/form-date-picker"
 import { saveConfiguration } from "@/lib/configuration/api"
 import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
 import { fetchProducts } from "@/lib/product/api"
-import { fetchVehiclesForCombo } from "@/lib/vehicle/api"
+import { fetchVehicles, fetchVehiclesForCombo } from "@/lib/vehicle/api"
 import ObjectViewer from "@/components/object-viewer"
 
 export default function Organization() {
@@ -23,7 +23,7 @@ export default function Organization() {
   const [saving, setSaving] = useState(false)
   const [formData, setFormData] = useState({
     id: "",
-    key: "",
+    key: "org",
     value: {
       razonSocial: "",
       domicilioComercial: "",
@@ -36,11 +36,18 @@ export default function Organization() {
       fechaInicioActividades: "",
       telefono: "",
       mail: "",
+    }
+  })
+  const [defaultInfo, setDefaultInfo] = useState({
+    id: "",
+    key: "default",
+    value: {
       productoDefault: {},
       vehiculoDefault: {},
     }
   })
   const [formDataCopy, setFormDataCopy] = useState({})
+  const [defaultInfoCopy, setDefaultInfoCopy] = useState({})
   const [products, setProducts] = useState([]);
   const [vehicles, setVehicles] = useState([]);
 
@@ -51,15 +58,19 @@ export default function Organization() {
   const fetchConfiguration = async () => {
     try {
       setLoading(true)
-      const [response, products, vehicles] = await Promise.all([
+      const [response, defaultInfo, products, vehicles] = await Promise.all([
         getConfiguration("org"),
+        getConfiguration("default"),
         fetchProducts(),
-        fetchVehiclesForCombo(),
+        fetchVehicles(),
       ]);
       setFormData(response)
+      setDefaultInfo(defaultInfo)
       setProducts(products);
       setVehicles(vehicles);
     } catch (error) {
+      console.log(error);
+      
       toast({
         title: "Error",
         description: "No se pudo cargar la configuración de la organización.",
@@ -86,6 +97,7 @@ export default function Organization() {
     setSaving(true)
     try {
       await saveConfiguration(formData)
+      await saveConfiguration(defaultInfo)
       setIsEditing(false)
       toast({
         title: "Actualizado",
@@ -109,7 +121,9 @@ export default function Organization() {
     e.preventDefault()
     // Deffensive copy of the original state of the formData before entenring the edition stage
     const originalData = JSON.parse(JSON.stringify(formData));
+    const originalInfoData = JSON.parse(JSON.stringify(defaultInfo));
     setFormDataCopy(originalData);
+    setDefaultInfoCopy(originalInfoData);
     setIsEditing(true)
   }
 
@@ -117,12 +131,14 @@ export default function Organization() {
     e.preventDefault()
     // Restoring formData to its original state before entering in edition
     setFormData({...formDataCopy})
+    setDefaultInfo({...defaultInfoCopy})
     setFormDataCopy({})
+    setDefaultInfoCopy({})
     setIsEditing(false)
   }
 
   const handleChange = (field, newValue) => {
-    setFormData(prev => ({
+    setDefaultInfo(prev => ({
       ...prev,
       value: {
         ...prev.value,
@@ -170,7 +186,7 @@ export default function Organization() {
               <FormCombo
                 id="productoDefault"
                 options={products} // Lista de opciones de productos
-                defaultValue={formData.value.productoDefault}
+                defaultValue={defaultInfo?.value?.productoDefault}
                 onChange={(option) => handleChange("productoDefault", option)}
                 placeholder="Seleccione el producto predeterminado"
                 readOnly={!isEditing}
@@ -186,7 +202,7 @@ export default function Organization() {
               <FormCombo
                 id="vehiculoDefault"
                 options={vehicles} // Lista de opciones de vehículos
-                defaultValue={formData.value.vehiculoDefault}
+                defaultValue={defaultInfo?.value?.vehiculoDefault}
                 onChange={(option) => handleChange("vehiculoDefault", option)}
                 placeholder="Seleccione el vehículo predeterminado"
                 readOnly={!isEditing}
@@ -214,7 +230,7 @@ export default function Organization() {
               </Label>
               <FormTextInput
                 id="razonSocial"
-                value={formData.value.razonSocial}
+                value={formData?.value?.razonSocial}
                 onChange={handleInputChange("razonSocial")}
                 readOnly={!isEditing}
                 placeholder="Ingrese la razón social de la empresa"
@@ -229,7 +245,7 @@ export default function Organization() {
               </Label>
               <FormTextInput
                 id="domicilioComercial"
-                value={formData.value.domicilioComercial}
+                value={formData?.value?.domicilioComercial}
                 onChange={handleInputChange("domicilioComercial")}
                 readOnly={!isEditing}
                 placeholder="Ingrese el domicilio comercial"
@@ -246,7 +262,7 @@ export default function Organization() {
               </Label>
               <FormTextInput
                 id="ciudad"
-                value={formData.value.ciudad}
+                value={formData?.value?.ciudad}
                 onChange={handleInputChange("ciudad")}
                 readOnly={!isEditing}
                 placeholder="Ingrese la ciudad de la empresa"
@@ -261,7 +277,7 @@ export default function Organization() {
               </Label>
               <FormTextInput
                 id="provincia"
-                value={formData.value.provincia}
+                value={formData?.value?.provincia}
                 onChange={handleInputChange("provincia")}
                 readOnly={!isEditing}
                 placeholder="Ingrese su provincia"
@@ -278,7 +294,7 @@ export default function Organization() {
               </Label>
               <FormTextInput
                 id="codigoPostal"
-                value={formData.value.codigoPostal}
+                value={formData?.value?.codigoPostal}
                 onChange={handleInputChange("codigoPostal")}
                 readOnly={!isEditing}
                 placeholder="Ingrese el CP de la ciudad de la empresa"
@@ -293,7 +309,7 @@ export default function Organization() {
               </Label>
               <FormTextInput
                 id="cuit"
-                value={formData.value.cuit}
+                value={formData?.value?.cuit}
                 onChange={handleInputChange("cuit")}
                 readOnly={!isEditing}
                 placeholder="XX-XXXXXXXX-X"
@@ -310,7 +326,7 @@ export default function Organization() {
               </Label>
               <FormTextInput
                 id="condicionIva"
-                value={formData.value.condicionIva}
+                value={formData?.value?.condicionIva}
                 onChange={handleInputChange("condicionIva")}
                 readOnly={!isEditing}
                 placeholder="Seleccione condición IVA"
@@ -322,7 +338,7 @@ export default function Organization() {
               <Label htmlFor="ingresosBrutos">Ingresos Brutos</Label>
               <FormTextInput
                 id="ingresosBrutos"
-                value={formData.value.ingresosBrutos}
+                value={formData?.value?.ingresosBrutos}
                 onChange={handleInputChange("ingresosBrutos")}
                 readOnly={!isEditing}
                 placeholder="Número de Ingresos Brutos"
@@ -340,7 +356,7 @@ export default function Organization() {
               <FormDatePicker
                 id="fechaInicioActividades"
                 readOnly={!isEditing}
-                value={formData.value.fechaInicioActividades}
+                value={formData?.value?.fechaInicioActividades}
                 onChange={handleInputChange("fechaInicioActividades")}
                 required
               />
@@ -353,7 +369,7 @@ export default function Organization() {
               </Label>
               <FormTextInput
                 id="telefono"
-                value={formData.value.telefono}
+                value={formData?.value?.telefono}
                 onChange={handleInputChange("telefono")}
                 readOnly={!isEditing}
                 placeholder="Seleccione condición IVA"
@@ -370,7 +386,7 @@ export default function Organization() {
               </Label>
               <FormTextInput
                 id="mail"
-                value={formData.value.mail}
+                value={formData?.value?.mail}
                 onChange={handleInputChange("mail")}
                 readOnly={!isEditing}
                 placeholder="Seleccione condición IVA"
