@@ -172,6 +172,7 @@ export default function BillingConfirmationPage() {
           amount: item.amount,
           pricePerUnit: pricing.unitPrice,
           iva: pricing.iva,
+          productNameAlias: pricing.alias,
         }
       }),
     }
@@ -232,6 +233,8 @@ export default function BillingConfirmationPage() {
           </Link>
         </div>
 
+        <ObjectViewer data={productPricing}></ObjectViewer>
+
         <div className="space-y-6">
           <InvoiceInformation items={items} client={client} />
 
@@ -276,7 +279,7 @@ export default function BillingConfirmationPage() {
                           </div>
                         </CardHeader>
                         <CardContent className="p-6 pt-3">
-                          <div className="grid grid-cols-1 lg:grid-cols-6 gap-4">
+                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                             <div>
                               <Label
                                 htmlFor={`quantity-${product.id}`}
@@ -316,6 +319,22 @@ export default function BillingConfirmationPage() {
                               />
                             </div>
                             <div>
+                              <Label
+                                htmlFor={`alias-${product.id}`}
+                                className="text-xs text-gray-500 uppercase tracking-wide font-medium"
+                              >
+                                Alias
+                              </Label>
+                              <FormTextInput
+                                id={`alias-${product.id}`}
+                                readOnly={false}
+                                value={product.alias}
+                                onChange={(e) => updateProductPricing(product.id, "alias", e.target.value)}
+                                required
+                                className="mt-1"
+                              />
+                            </div>
+                            <div>
                               <Label className="text-xs text-gray-500 uppercase tracking-wide font-medium">Subtotal</Label>
                               <FormTextInput
                                 readOnly={true}
@@ -334,7 +353,7 @@ export default function BillingConfirmationPage() {
                                 id={`iva-${product.id}`}
                                 options={ivas.elements}
                                 placeholder="Seleccionar IVA..."
-                                onChange={(option) => updateProductPricing(product.id, "ivaCode", option.code)}
+                                onChange={(option) => updateProductPricing(product.id, "iva", option.code)}
                                 defaultValue={ivas.default}
                                 displayKey="description"
                                 valueKey="code"

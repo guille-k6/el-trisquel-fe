@@ -20,6 +20,7 @@ import { FormCheckInput } from "@/components/ui/inputs/form-check"
 import { getTodayDateForInput } from "@/lib/utils"
 import { fetchLatestVoucherNumber, fetchLatestXVoucher } from "@/lib/daily-book/api"
 import ObjectViewer from "@/components/object-viewer"
+import { fetchProvidersForCombo } from "@/lib/nitrogen-providers/api"
 
 export default function NewLibroDiario() {
   const { toast } = useToast()
@@ -39,7 +40,7 @@ export default function NewLibroDiario() {
     ltTotalFlask: 0,
     pressureTankBefore: 0,
     pressureTankAfter: 0,
-    nitrogenProvider: "",
+    provider: {},
     items: [],
   })
   const [latestVoucherNumber, setLastVoucherNumber] = useState() // Fetch once, then I handle myself the increment or decrement
@@ -47,8 +48,7 @@ export default function NewLibroDiario() {
   const [vehicles, setVehicles] = useState({})
   const [products, setProducts] = useState({})
   const [clients, setClients] = useState([])
-
-  const nitrogenProviders = [{ id: "Air Liquide", name: "Air Liquide" }, { id: "Linde", name: "Linde" }];
+  const [providers, setProviders] = useState([]);
 
   useEffect(() => {
     fetchData()
@@ -57,12 +57,13 @@ export default function NewLibroDiario() {
   const fetchData = async () => {
     try {
       setLoading(true)
-      const [vehiclesData, productsData, clientsData, latestVoucherNumber, latestXVoucher] = await Promise.all([
+      const [vehiclesData, productsData, clientsData, latestVoucherNumber, latestXVoucher, providers] = await Promise.all([
         fetchVehiclesForCombo(),
         fetchProductsForCombo(),
         fetchClientsForCombo(),
         fetchLatestVoucherNumber(),
-        fetchLatestXVoucher()
+        fetchLatestXVoucher(),
+        fetchProvidersForCombo(),
       ])
 
       setVehicles(vehiclesData)
@@ -70,6 +71,13 @@ export default function NewLibroDiario() {
       setClients(clientsData)
       setLastVoucherNumber(latestVoucherNumber)
       setLatestXVoucher(latestXVoucher)
+      setProviders(providers);
+
+      setFormData({
+        ...formData,
+        provider: providers.defaultConfig,
+        vehicle: vehiclesData.defaultConfig,
+      })
     } catch (error) {
       toast({
         title: "Error",
@@ -214,7 +222,7 @@ export default function NewLibroDiario() {
         ltExtractedTank: Number(formData.ltExtractedTank),
         ltRemainingFlask: Number(formData.ltRemainingFlask),
         ltTotalFlask: Number(formData.ltTotalFlask),
-        nitrogenProvider: formData.nitrogenProvider,
+        provider: formData.provider,
         items: formData.items.map((item) => ({
           id: item.id,
           amount: Number(item.amount),
@@ -303,7 +311,7 @@ export default function NewLibroDiario() {
                   placeholder="Vehículo..."
                   onChange={(option) => handleChange("vehicle", option)}
                   readOnly={false}
-                  defaultValue={formData.vehicle || vehicles.defaultConfig}
+                  defaultValue={formData.vehicle}
                   required
                 />
               </div>
@@ -343,13 +351,13 @@ export default function NewLibroDiario() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
               <div className="space-y-2">
                 <Label htmlFor="nitrogenProvider">Proveedor</Label>
-                <FormCombo 
-                  id="nitrogenProviderCombo" 
-                  options={nitrogenProviders} 
-                  placeholder="Proveedor de nitrógeno..." 
-                  onChange={(option) => handleChange("nitrogenProvider", option.id)}
-                  readOnly={false} 
-                  defaultValue={formData.nitrogenProvider} 
+                <FormCombo
+                  id="nitrogenProviderCombo"
+                  options={providers.providers}
+                  placeholder="Proveedor de nitrógeno..."
+                  onChange={(option) => handleChange("provider", option)}
+                  readOnly={false}
+                  defaultValue={formData.provider}
                   required
                 />
               </div>
@@ -510,7 +518,7 @@ export default function NewLibroDiario() {
                           onChange={(selectedOption) => handleItemChange(index, "product", selectedOption)}
                           displayKey="name"
                           valueKey="id"
-                          defaultValue={item.product || products.defaultConfig}
+                          defaultValue={item.product}
                           readOnly={false}
                           required
                         />

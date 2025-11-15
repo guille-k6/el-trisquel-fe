@@ -15,6 +15,7 @@ import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
 import { fetchProducts } from "@/lib/product/api"
 import { fetchVehicles, fetchVehiclesForCombo } from "@/lib/vehicle/api"
 import ObjectViewer from "@/components/object-viewer"
+import { fetchProviders } from "@/lib/nitrogen-providers/api"
 
 export default function Organization() {
   const { toast } = useToast()
@@ -44,12 +45,14 @@ export default function Organization() {
     value: {
       productoDefault: {},
       vehiculoDefault: {},
+      proveedorDefault: {},
     }
   })
   const [formDataCopy, setFormDataCopy] = useState({})
   const [defaultInfoCopy, setDefaultInfoCopy] = useState({})
   const [products, setProducts] = useState([]);
   const [vehicles, setVehicles] = useState([]);
+  const [providers, setProviders] = useState([]);
 
   useEffect(() => {
     fetchConfiguration()
@@ -58,16 +61,18 @@ export default function Organization() {
   const fetchConfiguration = async () => {
     try {
       setLoading(true)
-      const [response, defaultInfo, products, vehicles] = await Promise.all([
+      const [response, defaultInfo, products, vehicles, providers] = await Promise.all([
         getConfiguration("org"),
         getConfiguration("default"),
         fetchProducts(),
         fetchVehicles(),
+        fetchProviders(),
       ]);
       setFormData(response)
       setDefaultInfo(defaultInfo)
       setProducts(products);
       setVehicles(vehicles);
+      setProviders(providers);
     } catch (error) {
       console.log(error);
       
@@ -169,11 +174,11 @@ export default function Organization() {
         <h1 className="text-2xl font-bold">Configuración General</h1>
       </div>
 
-      <Card className="mb-3">
+      <Card className="mb-4">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building className="h-5 w-5" />
-            Configuración Predeterminada
+            Datos predeterminados
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -181,7 +186,7 @@ export default function Organization() {
             {/* Producto Default */}
             <div className="space-y-2">
               <Label htmlFor="productoDefault">
-                Producto Predeterminado <span className="text-red-500">*</span>
+                Producto predeterminado
               </Label>
               <FormCombo
                 id="productoDefault"
@@ -190,14 +195,13 @@ export default function Organization() {
                 onChange={(option) => handleChange("productoDefault", option)}
                 placeholder="Seleccione el producto predeterminado"
                 readOnly={!isEditing}
-                required
               />
             </div>
 
             {/* Vehículo Default */}
             <div className="space-y-2">
               <Label htmlFor="vehiculoDefault">
-                Vehículo Predeterminado <span className="text-red-500">*</span>
+                Vehículo predeterminado
               </Label>
               <FormCombo
                 id="vehiculoDefault"
@@ -205,6 +209,21 @@ export default function Organization() {
                 defaultValue={defaultInfo?.value?.vehiculoDefault}
                 onChange={(option) => handleChange("vehiculoDefault", option)}
                 placeholder="Seleccione el vehículo predeterminado"
+                readOnly={!isEditing}
+                required
+              />
+            </div>
+            {/* Proveedor Default */}
+            <div className="space-y-2">
+              <Label htmlFor="proveedorDefault">
+                Proveedor de nitrógeno predeterminado
+              </Label>
+              <FormCombo
+                id="proveedorDefault"
+                options={providers} // Lista de opciones de vehículos
+                defaultValue={defaultInfo?.value?.proveedorDefault}
+                onChange={(option) => handleChange("proveedorDefault", option)}
+                placeholder="Seleccione el proveedor de nitrógeno predeterminado"
                 readOnly={!isEditing}
                 required
               />
@@ -217,7 +236,7 @@ export default function Organization() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building className="h-5 w-5" />
-            Datos de la Organización
+            Datos de facturación
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">

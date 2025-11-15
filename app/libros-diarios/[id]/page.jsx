@@ -20,6 +20,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
 import { getTodayDateForInput } from "@/lib/utils"
 import ObjectViewer from "@/components/object-viewer"
+import { fetchProvidersForCombo } from "@/lib/nitrogen-providers/api"
 
 export default function LibroDiarioDetail({ params }) {
   const { toast } = useToast()
@@ -42,7 +43,7 @@ export default function LibroDiarioDetail({ params }) {
     ltTotalFlask: 0,
     pressureTankBefore: 0,
     pressureTankAfter: 0,
-    nitrogenProvider: "",
+    provider: {},
     items: [],
     editable: false,
   })
@@ -55,6 +56,7 @@ export default function LibroDiarioDetail({ params }) {
   const [foundDailyBook, setFoundDailyBook] = useState(true)
   const [latestVoucherNumber, setLastVoucherNumber] = useState() // Fetch once, then I handle myself the increment or decrement
   const [latestXVoucher, setLatestXVoucher] = useState()
+  const [providers, setProviders] = useState([])
 
   const nitrogenProviders = [{ id: "Air Liquide", name: "Air Liquide" }, { id: "Linde", name: "Linde" }];
   useEffect(() => {
@@ -64,15 +66,15 @@ export default function LibroDiarioDetail({ params }) {
   const fetchData = async () => {
     try {
       setLoading(true)
-      const [libroDiarioData, vehiclesData, productsData, clientsData, latestVoucherNumber, latestXVoucher] = await Promise.all([
+      const [libroDiarioData, vehiclesData, productsData, clientsData, latestVoucherNumber, latestXVoucher, providers] = await Promise.all([
         fetchDailyBookById(id),
         fetchVehicles(),
         fetchProducts(),
         fetchClientsForCombo(),
         fetchLatestVoucherNumber(),
-        fetchLatestXVoucher()
+        fetchLatestXVoucher(),
+        fetchProvidersForCombo(),
       ])
-      console.log(vehiclesData);
       
 
       if(libroDiarioData !== null && libroDiarioData.items !== null) {
@@ -84,12 +86,12 @@ export default function LibroDiarioDetail({ params }) {
         });
       }
       setFormData(libroDiarioData)
-
       setVehicles(vehiclesData)
       setProducts(productsData)
       setClients(clientsData)
       setLastVoucherNumber(latestVoucherNumber)
       setLatestXVoucher(latestXVoucher)
+      setProviders(providers);
     } catch (error) {
       setFoundDailyBook(false)
       toast({
@@ -209,7 +211,7 @@ export default function LibroDiarioDetail({ params }) {
         ltExtractedTank: Number(formData.ltExtractedTank),
         ltRemainingFlask: Number(formData.ltRemainingFlask),
         ltTotalFlask: Number(formData.ltTotalFlask),
-        nitrogenProvider: formData.nitrogenProvider,
+        provider: formData.provider,
         items: formData.items.map((item) => ({
           id: item.id,
           amount: Number(item.amount),
@@ -395,13 +397,13 @@ export default function LibroDiarioDetail({ params }) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
               <div className="space-y-2">
                 <Label htmlFor="nitrogenProvider">Proveedor</Label>
-                <FormCombo 
-                  id="nitrogenProviderCombo" 
-                  options={nitrogenProviders} 
-                  placeholder="Proveedor de nitrógeno..." 
-                  onChange={(option) => handleChange("nitrogenProvider", option.id)}
-                  readOnly={!isEditing} 
-                  defaultValue={formData.nitrogenProvider} 
+                <FormCombo
+                  id="nitrogenProviderCombo"
+                  options={providers.providers}
+                  placeholder="Proveedor de nitrógeno..."
+                  onChange={(option) => handleChange("provider", option)}
+                  readOnly={!isEditing}
+                  defaultValue={formData.provider}
                   required
                 />
               </div>
