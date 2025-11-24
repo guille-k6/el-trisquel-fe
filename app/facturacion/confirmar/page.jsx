@@ -15,7 +15,7 @@ import { FormNumberInput } from "@/components/ui/inputs/form-number-input"
 import { FormTextInput } from "@/components/ui/inputs/form-text-input"
 import { FormDatePicker } from "@/components/ui/inputs/form-date-picker"
 import { processNewInvoice } from "@/lib/invoice/api"
-import { fetchIvas } from "@/lib/afip/api"
+import { fetchIvas, fetchSellConditions } from "@/lib/afip/api"
 import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
 import ObjectViewer from "@/components/object-viewer"
 import InvoiceSummary from "./invoice-summary"
@@ -43,6 +43,8 @@ export default function BillingConfirmationPage() {
   const [ivas, setIvas] = useState([])
   const [priceModalOpen, setPriceModalOpen] = useState(false)
   const [selectedProductId, setSelectedProductId] = useState(null)
+  const [sellConditions, setSellConditions] = useState([])
+  const [sellCondition, setSellCondition] = useState(null)
 
   // Get item IDs from URL
   const itemIds = searchParams.get("items")?.split(",").map((id) => Number.parseInt(id)) || []
@@ -63,11 +65,16 @@ export default function BillingConfirmationPage() {
 
   const fetchData = async () => {
     try {
-      const searchedItems = await fetchDailyBookItemsInIds(searchParams.get("items"))
+
+      const [searchedItems, sellConditions, ivas] = await Promise.all([
+        fetchDailyBookItemsInIds(searchParams.get("items")),
+        fetchSellConditions(),
+        fetchIvas(),
+      ]);
       setItems(searchedItems)
       setClient(searchedItems[0].client)
-      const ivas = await fetchIvas()
       setIvas(ivas)
+      setSellConditions(sellConditions)
       initializeProductPricing(searchedItems, ivas)
       setLoading(false)
     } catch (error) {
@@ -161,6 +168,7 @@ export default function BillingConfirmationPage() {
 
     const invoiceInformation = {
       invoiceDate: date,
+      sellCondition: sellCondition,
       clientId: items[0].client.id,
       dbiIds: items.map((item) => item.id),
       invoiceItems: items.map((item) => {
@@ -234,6 +242,7 @@ export default function BillingConfirmationPage() {
         </div>
 
         <ObjectViewer data={productPricing}></ObjectViewer>
+        <ObjectViewer data={sellCondition}></ObjectViewer>
 
         <div className="space-y-6">
           <InvoiceInformation items={items} client={client} />
@@ -256,6 +265,17 @@ export default function BillingConfirmationPage() {
                   <div className="space-y-2 w-full">
                     <Label htmlFor="dateTo">Fecha de factura</Label>
                     <FormDatePicker id="date" onChange={(e) => setDate(e.target.value)} value={date} required className="w-full"/>
+                  </div>
+                  <div className="space-y-2 w-full">
+                    <Label htmlFor="sellCondition">Condición de venta</Label>
+                    <FormCombo
+                      id="sellCondition"
+                      options={sellConditions}
+                      placeholder="Seleccionar condición de venta..."
+                      onChange={(e) => setSellCondition(e)}
+                      required
+                      className="mt-1"
+                    />
                   </div>
                 </div>
               </div>

@@ -1,14 +1,14 @@
 "use client"
 
 import { useState, useEffect, use } from "react"
-import { ArrowLeft,FileText,User,Package,Calendar,CreditCard,Building,Phone,Mail,MapPin,Hash,Eye,} from "lucide-react"
+import { ArrowLeft,FileText,User,Package,Calendar,CreditCard,Building,Phone,Mail,MapPin,Hash,Eye, Download,} from "lucide-react"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import InvoiceQueueRecord from "./invoice-queue-record"
-import { fetchInvoiceById } from "@/lib/invoice/api"
+import { fetchInvoiceById, openInvoicePdf } from "@/lib/invoice/api"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/toast"
 import InvoiceStatusBadge from "../queue-status-badge"
@@ -319,10 +319,20 @@ export default function InvoiceDetail({ params }) {
           </Card>
 
           {/* Queue Record Button */}
-          <Button onClick={() => setIsModalOpen(true)} className="w-full bg-blue-600 hover:bg-blue-700">
-            <Eye className="mr-2 h-4 w-4" />
-            Registro de facturación
-          </Button>
+          <div>
+            <div className="flex gap-2">
+              <Button onClick={() => setIsModalOpen(true)} className="flex-[2] bg-blue-600 hover:bg-blue-700">
+                <Eye className="mr-2 h-4 w-4" />
+                Registro de facturación
+              </Button>
+              {invoice.cae && (
+              <Button onClick={() => openInvoicePdf(invoice.id)} className="flex-1 bg-red-600 hover:bg-red-700">
+                <Download className="mr-2 h-4 w-4" />
+                PDF
+              </Button>
+              )}
+            </div>
+          </div>
 
           {/* Administrative Info */}
           <Card>

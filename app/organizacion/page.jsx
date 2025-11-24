@@ -457,10 +457,7 @@ export default function Organization() {
             <div>
               <p className="font-medium text-gray-700 mb-1">Información importante:</p>
               <ul className="space-y-1 text-sm">
-                <li>
-                  • Son los datos que aparecerán en las facturas emitidas por el sistema
-                </li>
-                <li>• El CUIT debe ingresarse con el formato XX-XXXXXXXX-X</li>
+                <li>• El CUIT debe ingresarse con el formato XXXXXXXXXXX (no usar guiones ni nada)</li>
                 <li>• Esta información se utilizará en la generación de facturas y reportes</li>
                 <li>• Los cambios se aplicarán inmediatamente después de guardar</li>
               </ul>

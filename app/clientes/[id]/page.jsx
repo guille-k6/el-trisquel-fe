@@ -35,6 +35,7 @@ export default function ClientDetail({ params }) {
     name: "",
     phoneNumber: "",
     condicionIva: {},
+    commercialAddress: "",
   })
   const [formDataCopy, setFormDataCopy] = useState({})
   const [foundClient, setFoundClient] = useState(true)
@@ -238,6 +239,11 @@ export default function ClientDetail({ params }) {
             valueKey="code"
             required
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="commercialAddress">Domicilio comercial (facturación)</Label>
+          <FormTextInput id="commercialAddress" readOnly={!isEditing} value={formData.commercialAddress} onChange={handleInputChange("commercialAddress")} required/>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 pt-4">
