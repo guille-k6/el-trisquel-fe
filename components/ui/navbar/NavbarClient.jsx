@@ -1,12 +1,23 @@
 "use client"
+
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 
-export default function Navbar() {
+export default function NavbarClient() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const router = useRouter()
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen)
+  const toggleMobileMenu = () => setIsMobileMenuOpen((v) => !v)
+
+  async function logout() {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" })
+    } finally {
+      setIsMobileMenuOpen(false)
+      router.replace("/login") // o "/"
+      router.refresh()
+    }
   }
 
   return (
@@ -16,7 +27,6 @@ export default function Navbar() {
           {/* Logo and Brand */}
           <Link href="/" className="flex items-center space-x-3">
             <div className="flex-shrink-0">
-              {/* Trisquel SVG Logo */}
               <svg width="32" height="32" viewBox="0 0 100 100" className="text-blue-600" fill="currentColor">
                 <path d="M50 10 C30 10, 15 25, 15 45 C15 55, 20 64, 28 70 L35 65 C30 61, 27 53, 27 45 C27 32, 37 22, 50 22 C55 22, 60 24, 64 27 L69 20 C62 14, 56 10, 50 10 Z" />
                 <path d="M85 45 C85 25, 70 10, 50 10 C40 10, 31 15, 25 22 L30 29 C34 24, 42 21, 50 21 C63 21, 73 31, 73 44 C73 49, 71 54, 68 58 L75 63 C81 56, 85 51, 85 45 Z" />
@@ -43,6 +53,10 @@ export default function Navbar() {
             <Link href="/clientes" className="text-gray-600 hover:text-gray-800 transition-colors">
               Clientes
             </Link>
+
+            <button onClick={logout} className="text-gray-600 hover:text-gray-800 transition-colors">
+              Cerrar sesión
+            </button>
           </div>
 
           {/* Mobile menu button */}
@@ -53,12 +67,10 @@ export default function Navbar() {
               aria-label="Abrir menú"
             >
               {isMobileMenuOpen ? (
-                // Close icon (X)
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               ) : (
-                // Hamburger icon
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
@@ -99,6 +111,13 @@ export default function Navbar() {
               >
                 Clientes
               </Link>
+
+              <button
+                onClick={logout}
+                className="w-full text-left block px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md transition-colors"
+              >
+                Cerrar sesión
+              </button>
             </div>
           </div>
         )}

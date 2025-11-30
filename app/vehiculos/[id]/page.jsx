@@ -25,6 +25,7 @@ export default function VehicleDetail({ params }) {
   const [saving, setSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({
+    id: null,
     name: "",
     purchaseDate: "",
     purchaseDatePrice: '',
@@ -40,6 +41,7 @@ export default function VehicleDetail({ params }) {
     try {
       const data = await fetchVehicleById(id);
       setFormData({
+        id: data.id,
         name: data.name,
         purchaseDate: data.purchaseDate,
         purchaseDatePrice: data.purchaseDatePrice,
