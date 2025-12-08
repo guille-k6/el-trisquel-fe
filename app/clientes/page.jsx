@@ -34,7 +34,6 @@ export default function Clientes() {
       const response = await fetchClients(page, filters)
       setClients(response.content || [])
       setPagination(response.page)
-      console.log(response.content);
       
     } catch (error) {
       toast({

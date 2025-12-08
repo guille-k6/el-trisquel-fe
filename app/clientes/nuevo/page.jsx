@@ -14,6 +14,7 @@ import { FormCombo } from "@/components/ui/inputs/formCombo/form-combo"
 import { FormNumberInput } from "@/components/ui/inputs/form-number-input"
 import { fetchTiposDocumento } from "@/lib/afip/api"
 import { fetchIvaConditions } from "@/lib/afip/api"
+import ObjectViewer from "@/components/object-viewer"
 
 export default function NewClient() {
   const router = useRouter()
@@ -36,17 +37,17 @@ export default function NewClient() {
   }, [])
 
   const getDefaults = async () => {
-    const [tipoDoc, ivaCondition] = await Promise.all([
+    const [tipoDocResp, ivaCondResp] = await Promise.all([
       fetchTiposDocumento(),
-      fetchIvaConditions()])
-
-     setTipoDoc(tipoDoc);  
-     setIvaCondition(ivaCondition);
-     setFormData({
-      ...formData,
-      docType: tipoDoc.default.codigo,
-      condicionIva: ivaCondition.default.codigo,
-     })
+      fetchIvaConditions(),
+    ])
+    setTipoDoc(tipoDocResp)
+    setIvaCondition(ivaCondResp)
+    setFormData(prev => ({
+      ...prev,
+      docType: tipoDocResp?.default?.code ?? "",
+      condicionIva: ivaCondResp?.default?.code ?? "",
+    }))
   }
 
   const handleSubmit = async (e) => {

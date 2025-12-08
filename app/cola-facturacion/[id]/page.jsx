@@ -184,10 +184,6 @@ import { useRouter } from "next/navigation"
                     </p>
                   </div>
                   <div>
-                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Reproceso</Label>
-                    <p className="font-medium">{queueItem.afipReprocess === "N" ? "No" : "Sí"}</p>
-                  </div>
-                  <div>
                     <Label className="text-xs text-gray-500 uppercase tracking-wide">CAE</Label>
                     <p className="font-medium">{queueItem.afipCae || "No asignado"}</p>
                   </div>

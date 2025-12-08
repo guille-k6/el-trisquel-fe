@@ -166,6 +166,16 @@ export default function BillingConfirmationPage() {
       return
     }
 
+    if (!sellCondition) {
+      toast({
+        title: "Faltan campos obligatorios",
+        description: "Completa la condición de venta de la factura",
+        type: "error",
+        duration: 8000,
+      })
+      return
+    }
+
     const invoiceInformation = {
       invoiceDate: date,
       sellCondition: sellCondition,
