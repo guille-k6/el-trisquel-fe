@@ -194,7 +194,7 @@ export default function InvoiceDetail({ params }) {
                 <div>
                   <Label className="text-xs text-gray-500 uppercase tracking-wide">Nombre</Label>
                   <Link
-                    href={`/clients/${invoice.client.id}`}
+                    href={`/clientes/${invoice.client.id}`}
                     className="font-medium text-blue-600 hover:text-blue-800 hover:underline block"
                   >
                     {invoice.client.name}

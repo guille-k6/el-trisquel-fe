@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Car, Package, Users, FileText, Settings, Building, BookOpen, Receipt, TimerReset, } from "lucide-react"
 import ToastHandler from "@/components/toast-handler"
+import { Suspense } from "react"
 
 export default function Home() {
   return (
@@ -89,7 +90,10 @@ export default function Home() {
           </div>
         </section>
       </div>
-      <ToastHandler />
+
+      <Suspense fallback={null}>
+        <ToastHandler />
+      </Suspense>
     </>
   )
 }
